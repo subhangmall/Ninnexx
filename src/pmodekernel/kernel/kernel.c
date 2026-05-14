@@ -143,28 +143,28 @@ void continueInitialization() {
     setupInterruptStructures();
     enableInterrupts();
 
-    kprint("HIIIIII");
+    kprint("\nHIIIIII");
 
-    kprint_hex((uint32_t)&int0);
+    // kprint_hex((uint32_t)&int0);
 
-    kprint_hex((uint32_t)idt[0].offset + (((uint32_t)idt[0].offset2) << 16));
+    // kprint_hex((uint32_t)idt[0].offset + (((uint32_t)idt[0].offset2) << 16));
 
-    // asm volatile (
-    //     "int $0x00"
-    //     :
-    //     :
-    //     :
-    // );
+    asm volatile (
+        "int $0x00"
+        :
+        :
+        :
+    );
 
     // int* a = kalloc(5000);
 
 
-    kprint("\nDPL: ");
-    kprint_hex(idt[0].dpl);
-    kprint("\nGATE TYPE: ");
-    kprint_hex(idt[0].gateType);
-    kprint("\nPRESENT: ");
-    kprint_hex(idt[0].present);
+    // kprint("\nDPL: ");
+    // kprint_hex(idt[0].dpl);
+    // kprint("\nGATE TYPE: ");
+    // kprint_hex(idt[0].gateType);
+    // kprint("\nPRESENT: ");
+    // kprint_hex(idt[0].present);
     // kprint("\nRESERVED: ");
     // kprint_hex(idt[0].reserved);
     // kprint("\nSEG SELECTOR: ");

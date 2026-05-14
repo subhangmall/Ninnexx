@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include "../logging.h"
 
-#pragma (pack, 1) 
+#pragma pack(push, 1) 
 
 struct InterruptDescriptor {
     uint16_t offset;
@@ -19,7 +19,7 @@ struct IdtrStruct {
     uint32_t idtVAddr;
 };
 
-#pragma(pop)
+#pragma pack(pop)
 
 struct IdtrStruct idtr __attribute__((aligned(16)));
 struct InterruptDescriptor idt[256] __attribute__((aligned(16)));
@@ -58,6 +58,7 @@ void setInterruptDispatcher(uint8_t intNum, uint32_t addr, uint16_t segSelector,
 void commonHandler(uint32_t* stack) {
     // interruptRequestHandlers[stack[12]](stack);
     kprint("Hi");
+    while(1) {}
 }
 
 // void setInterruptHandlerFunction() {
@@ -66,7 +67,8 @@ void commonHandler(uint32_t* stack) {
 
 void enableInterrupts() {
     asm volatile (
-        "lidt %0"
+        "lidt %0\n\t"
+        "sti"
         :
         : "m" (idtr)
         : 

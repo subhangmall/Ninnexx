@@ -3,7 +3,7 @@
 #ifndef IDT_H
 #define IDT_H
 
-#pragma (pack, 1) 
+#pragma pack(push, 1) 
 
 struct InterruptDescriptor {
     uint16_t offset;
@@ -21,7 +21,7 @@ struct IdtrStruct {
     uint32_t idtVAddr;
 };
 
-#pragma(pop)
+#pragma pack(pop)
 
 void setupInterruptStructures();
 void enableInterrupts();

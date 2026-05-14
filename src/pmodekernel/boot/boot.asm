@@ -96,7 +96,7 @@ main:
     mov ds, ax
     mov es, ax
     mov ss, ax
-    mov esp, 0x90000   ; safe stack for 32-bit code
+    mov esp, 0x3F0000   ; safe stack for 32-bit code
 
     mov edi, 0xB8002
 

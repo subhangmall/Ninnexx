@@ -41,7 +41,7 @@ struct PageTableEntry {
 #pragma pack(pop)
 
 
-static uint8_t physicalPageRecord[0xFFFFFFFF/PAGE_SIZE/8];
+// static uint8_t physicalPageRecord[0xFFFFFFFF/PAGE_SIZE/8];
 
 __attribute__((aligned(PAGE_SIZE)))
 __attribute__((section(".boot.data")))
