@@ -1,13 +1,5 @@
 #include <stdint.h>
-
-#define PAGE_SIZE 4096
-#define PMM_UNAVAILABLE true
-#define PMM_AVAILABLE false
-#define RECURSIVE_PT_ADDR 0xFFC00000
-#define KERNEL_PAGE_DIRECTORY ((struct PageDirectoryEntry*) KERNEL_PAGE_DIRECTORY_ADDR) 
-#define KERNEL_PAGE_DIRECTORY_ADDR 0xFFFFF000
-#define MMIO_VIRTUAL_SPACE_BASE 0xE0000000
-#define MMIO_VIRTUAL_SPACE_SIZE 0x10000000
+#include "./commonMacros.h"
 
 uint8_t physicalPageRecord[0xFFFFFFFF/PAGE_SIZE/8];
 static uint32_t mmioNextFree = MMIO_VIRTUAL_SPACE_BASE;

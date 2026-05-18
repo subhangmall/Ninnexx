@@ -8,6 +8,7 @@
 #include "./interrupts/pic.h"
 #include "./memory/vmm.h"
 #include "./memory/kalloc.h"
+#include "./interrupts/initInterruptHandlers.h"
 
 extern void int0(void);
 // #include "./memory/kmemmgt.h"
@@ -125,7 +126,7 @@ void continueInitialization() {
 
     setupInterruptStructures();
     initPIC(0x20, 0x28);
-    disablePIC();
+    // disablePIC();
     enableInterrupts();
     // kprint_hex(1/0);
     // asm volatile (
@@ -144,6 +145,11 @@ void continueInitialization() {
 
     uint8_t* a = kalloc(5000);
     kprint_hex((uint32_t) a);
+    // kprint_hex(1/0);
+    // setIDTHandler(0, )
+    initInterruptHandlers();
+    // kprint_hex(1/0);
+    // kprint_hex((uint32_t) *(uint8_t*) 0x12345567);
 
     while (1) {}
 

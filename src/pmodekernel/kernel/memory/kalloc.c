@@ -8,11 +8,7 @@
 #include "./pmm.h"
 #include "./e820.h"
 #include "./vmm.h"
-
-#define PAGE_SIZE 4096
-#define NULL ((void*)0)
-#define ALIGN_DOWN(x) ((x) & ~(PAGE_SIZE - 1))
-#define ALIGN_UP(x) (((x) + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
+#include "./commonMacros.h"
 
 void* kalloc(uint32_t numBytes);
 void free(void* ptr);

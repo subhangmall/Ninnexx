@@ -1,12 +1,7 @@
 #include "./pmm.h"
 #include <stdint.h>
 #include "../logging.h"
-
-#define PAGE_SIZE 4096
-#define MAX_REGIONS 1024
-#define AVAILABLE_MEM_E820 1
-#define PMM_UNAVAILABLE true
-#define PMM_AVAILABLE false
+#include "./commonMacros.h"
 
 #pragma pack(push, 1)
 

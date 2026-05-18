@@ -1,12 +1,8 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include "kmemmgt.h"
+// #include "kmemmgt.h"
 #include "./contHighHalfSetup.h"
-
-
-#define PAGE_SIZE 4096
-
-// #define KERNEL_STACK_SIZE  0x4000
+#include "./commonMacros.h"
 
 void highHalfEntry(void);
 

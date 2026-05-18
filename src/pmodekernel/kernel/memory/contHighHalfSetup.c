@@ -1,10 +1,7 @@
 #include <stdint.h>
 #include "./e820.h"
 #include "./pmm.h"
-
-#define PMM_UNAVAILABLE true
-#define PMM_AVAILABLE false
-#define PAGE_SIZE 4096
+#include "./commonMacros.h"
 
 void continuedHigherHalfMemSetup(uint32_t firstKernelPageTableAddr, uint32_t kernelPageDirectoryAddr) {
     parseE820Output();

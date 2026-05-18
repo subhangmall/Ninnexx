@@ -2,26 +2,7 @@
 #include <stdbool.h>
 #include "./pmm.h"
 #include "../logging.h"
-
-#define VMM_PRESENT    0x1
-#define VMM_WRITABLE   0x2
-#define VMM_USER       0x4
-#define VMM_MMIO       0x8
-
-#define PMM_UNAVAILABLE true
-#define PMM_AVAILABLE false
-
-#define KERNEL_PAGE_DIRECTORY ((struct PageDirectoryEntry*) KERNEL_PAGE_DIRECTORY_ADDR) 
-#define RECURSIVE_PT_ADDR 0xFFC00000
-
-#define MMIO_VIRTUAL_SPACE_BASE 0xE0000000
-#define MMIO_VIRTUAL_SPACE_SIZE 0x10000000
-
-#define KERNEL_PAGE_DIRECTORY ((struct PageDirectoryEntry*) KERNEL_PAGE_DIRECTORY_ADDR) 
-#define KERNEL_PAGE_DIRECTORY_ADDR 0xFFFFF000
-
-#define ALIGN_DOWN(x) ((x) & ~(PAGE_SIZE - 1))
-#define ALIGN_UP(x) (((x) + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
+#include "./commonMacros.h"
 
 static uint32_t mmioNextFree = MMIO_VIRTUAL_SPACE_BASE;
 
