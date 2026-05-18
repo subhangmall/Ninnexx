@@ -33,10 +33,10 @@ void defaultPICHandler(uint32_t* stack);
 uint8_t irqNumToIntNum(uint8_t irqNum);
 
 bool linkIRQHandler(uint8_t irqNum, uint32_t address) {
-	// if (irqNumToIntNum(irqNum) == 0x00) {
-	// 	return false;
-	// }
-	// setIDTHandler(irqNumToIntNum(irqNum), address);
+	if (irqNumToIntNum(irqNum) == 0x00) {
+		return false;
+	}
+	setIDTHandler(irqNumToIntNum(irqNum), address);
 }
 
 void initPIC(uint8_t mOffset, uint8_t sOffset) {

@@ -319,7 +319,10 @@ void (*idtRequestDispatchers[256])(void) = {
 void commonHandler(uint32_t* stack);
 
 void defaultFun(uint32_t* stack) {
-    kprint("hi");
+    kprint("Uninitialized interrupt ");
+    kprint_hex(stack[12]);
+    kprint(" with (potential) error code ");
+    kprint_hex(stack[13]);
 }
 
 void setInterruptDispatcher(uint8_t intNum, uint32_t addr, uint16_t segSelector, uint8_t gateType, uint8_t dpl);
@@ -354,8 +357,6 @@ void setInterruptDispatcher(uint8_t intNum, uint32_t addr, uint16_t segSelector,
 
 void commonHandler(uint32_t* stack) {
     interruptRequestHandlers[stack[12]](stack);
-    // kprint("Hi");
-    // while(1) {}
 }
 
 void enableInterrupts() {
@@ -366,4 +367,8 @@ void enableInterrupts() {
         : "m" (idtr)
         : 
     );
+}
+
+void setIDTHandler(int isrNum, int handlerAddr) {
+    interruptRequestHandlers[isrNum] = (void(*)(uint32_t*)) handlerAddr;
 }

@@ -122,21 +122,23 @@ void continueInitialization() {
     videoMemory = (volatile char*) allocatePhysicalRange(0xB8000, 4000);
 
     setupInterruptStructures();
+    initPIC(0x20, 0x28);
     disablePIC();
     enableInterrupts();
-
-    asm volatile (
-        "int $0x00"
-        :
-        :
-        :
-    );
-    asm volatile (
-        "int $0x01"
-        :
-        :
-        :
-    );
+    kprint_hex(1/0);
+    // asm volatile (
+    //     "int $0x20"
+    //     :
+    //     :
+    //     :
+    // );
+    // asm volatile (
+    //     "int $0x40"
+    //     :
+    //     :
+    //     :
+    // );
+    kprint("hi!!!;D");
 
     while (1) {}
 
