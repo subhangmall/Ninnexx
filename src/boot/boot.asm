@@ -449,23 +449,24 @@ gdt:
     db 11001111b
     db 0
 
+; NOT NEEDED B/C GDT RELOADED LATER
 ; 4th entry: 32bit user mode code semgents
-.gdt_selector_32pm_user_cs:
-    dw 0xFFFF
-    dw 0
-    db 0
-    db 0xFA ; access byte                             
-    db 11001111b
-    db 0
+; .gdt_selector_32pm_user_cs:
+;     dw 0xFFFF
+;     dw 0
+;     db 0
+;     db 0xFA ; access byte                             
+;     db 11001111b
+;     db 0
 
-; 5th entry 32 bit user mode data segments
-.gdt_selector_32pm_user_ds:
-    dw 0xFFFF
-    dw 0
-    db 0
-    db 0xF2 ; access byte                             
-    db 11001111b
-    db 0
+; ; 5th entry 32 bit user mode data segments
+; .gdt_selector_32pm_user_ds:
+;     dw 0xFFFF
+;     dw 0
+;     db 0
+;     db 0xF2 ; access byte                             
+;     db 11001111b
+;     db 0
 
 
 ; In order to load GDT, another structure is

@@ -9,13 +9,15 @@
 #include "./memory/vmm.h"
 #include "./memory/kalloc.h"
 #include "./interrupts/initInterruptHandlers.h"
+// #include "./gdt.asm"
 
-extern void int0(void);
+// extern void int0(void);
 // #include "./memory/kmemmgt.h"
 // #include "./logging.h"
 // #include "./idt.h"
 // #include "./pic.h"
 // #include "./basicInterruptHandlers.h"
+extern void gdt_flush();
 
 __attribute__((section(".boot"))) void kentry(void);
 void continueInitialization();
@@ -126,7 +128,7 @@ void continueInitialization() {
 
     setupInterruptStructures();
     initPIC(0x20, 0x28);
-    // disablePIC();
+    disablePIC();
     enableInterrupts();
     // kprint_hex(1/0);
     // asm volatile (
@@ -148,6 +150,7 @@ void continueInitialization() {
     // kprint_hex(1/0);
     // setIDTHandler(0, )
     initInterruptHandlers();
+    gdt_flush();
     // kprint_hex(1/0);
     // kprint_hex((uint32_t) *(uint8_t*) 0x12345567);
 
