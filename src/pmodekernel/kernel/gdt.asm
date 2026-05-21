@@ -68,8 +68,8 @@ gdt_descriptor:
     dd gdt
 
 section .text
-global gdt_flush
-gdt_flush:
+global gdtFlush
+gdtFlush:
     lgdt [gdt_descriptor]
 
     mov ax, 0x10

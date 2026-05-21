@@ -17,7 +17,7 @@
 // #include "./idt.h"
 // #include "./pic.h"
 // #include "./basicInterruptHandlers.h"
-extern void gdt_flush();
+extern void gdtFlush();
 
 __attribute__((section(".boot"))) void kentry(void);
 void continueInitialization();
@@ -128,7 +128,7 @@ void continueInitialization() {
 
     setupInterruptStructures();
     initPIC(0x20, 0x28);
-    disablePIC();
+    // disablePIC();
     enableInterrupts();
     // kprint_hex(1/0);
     // asm volatile (
@@ -150,7 +150,7 @@ void continueInitialization() {
     // kprint_hex(1/0);
     // setIDTHandler(0, )
     initInterruptHandlers();
-    gdt_flush();
+    gdtFlush();
     // kprint_hex(1/0);
     // kprint_hex((uint32_t) *(uint8_t*) 0x12345567);
 
