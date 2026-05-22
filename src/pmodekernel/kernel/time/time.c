@@ -1,0 +1,25 @@
+#include "../io/iolibrary.h"
+#include "./pitIntr.h"
+#include "../interrupts/pic.h"
+#include "../logging.h"
+
+uint32_t freq;
+volatile uint32_t ticks = 0; 
+
+// credit to: https://github.com/dreamportdev/Osdev-Notes/blob/master/02_Architecture/08_Timers.md
+void setPitPeriodic(uint32_t count) {
+    outb(0x43, 0b00110100);
+    outb(0x40, count & 0xFF); //low-byte
+    outb(0x40, count >> 8); //high-byte
+    freq = 1193182/count;
+}
+
+void initTimeIntrHandler() {
+    linkIRQHandler(0, (uint32_t) pitIntr);
+}
+
+void sleep(uint32_t ms) {
+    uint32_t startingTime = ticks;
+    // kprint_hex(startingTime);
+    while (((ticks-startingTime) * 1000) < ms * freq) {};
+}

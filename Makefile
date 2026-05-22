@@ -4,6 +4,7 @@ KERNEL := src/pmodekernel/kernel
 MEM := $(KERNEL)/memory
 INTR := $(KERNEL)/interrupts
 IO := $(KERNEL)/io
+TIME := $(KERNEL)/time
 BOOT := src/boot
 TMP := tmp
 OUT := target
@@ -25,14 +26,14 @@ $(TMP)/boot.bin: $(BOOT)/boot.asm $(TMP)/kernel.bin | $(TMP)
 $(TMP)/kernel.bin: $(TMP)/kernel.elf
 	objcopy -O binary $(TMP)/kernel.elf $(TMP)/kernel.bin
 
-# $(TMP)/kernel.elf: $(TMP)/kernel.o $(TMP)/memSetup.o $(TMP)/kmemmgt.o $(TMP)/logging.o $(TMP)/idt.o $(TMP)/intDispatchers.o $(TMP)/iolibrary.o $(TMP)/pic.o $(TMP)/initInterruptHandlers.o $(KERNEL)/linker.ld 
-# 	ld -m elf_i386 -T $(KERNEL)/linker.ld -o $(TMP)/kernel.elf $(TMP)/kernel.o $(TMP)/memSetup.o $(TMP)/kmemmgt.o $(TMP)/logging.o $(TMP)/idt.o $(TMP)/intDispatchers.o $(TMP)/iolibrary.o $(TMP)/pic.o $(TMP)/initInterruptHandlers.o
+$(TMP)/kernel.elf: $(TMP)/kernel.o $ $(TMP)/memSetup.o $(TMP)/kalloc.o $(TMP)/logging.o $(TMP)/idt.o $(TMP)/intDispatchers.o $(TMP)/iolibrary.o $(TMP)/initInterruptHandlers.o $(TMP)/pic.o $(TMP)/e820.o $(TMP)/pmm.o $(TMP)/contHighHalfSetup.o $(TMP)/vmm.o $(TMP)/gdt.o $(TMP)/time.o $(TMP)/pitIntr.o $(KERNEL)/linker.ld 
+	ld -m elf_i386 -T $(KERNEL)/linker.ld -o $(TMP)/kernel.elf $(TMP)/kernel.o $(TMP)/memSetup.o $(TMP)/kalloc.o $(TMP)/logging.o $(TMP)/idt.o $(TMP)/intDispatchers.o $(TMP)/iolibrary.o $(TMP)/initInterruptHandlers.o $(TMP)/e820.o $(TMP)/pmm.o $(TMP)/pic.o $(TMP)/contHighHalfSetup.o $(TMP)/vmm.o $(TMP)/gdt.o $(TMP)/time.o $(TMP)/pitIntr.o
 
-$(TMP)/kernel.elf: $(TMP)/kernel.o $ $(TMP)/memSetup.o $(TMP)/kalloc.o $(TMP)/logging.o $(TMP)/idt.o $(TMP)/intDispatchers.o $(TMP)/iolibrary.o $(TMP)/initInterruptHandlers.o $(TMP)/pic.o $(TMP)/e820.o $(TMP)/pmm.o $(TMP)/contHighHalfSetup.o $(TMP)/vmm.o $(TMP)/gdt.o $(KERNEL)/linker.ld 
-	ld -m elf_i386 -T $(KERNEL)/linker.ld -o $(TMP)/kernel.elf $(TMP)/kernel.o $(TMP)/memSetup.o $(TMP)/kalloc.o $(TMP)/logging.o $(TMP)/idt.o $(TMP)/intDispatchers.o $(TMP)/iolibrary.o $(TMP)/initInterruptHandlers.o $(TMP)/e820.o $(TMP)/pmm.o $(TMP)/pic.o $(TMP)/contHighHalfSetup.o $(TMP)/vmm.o $(TMP)/gdt.o
+$(TMP)/pitIntr.o: $(TIME)/pitIntr.c | $(TMP)
+	gcc -m32 -ffreestanding -fno-stack-protector -c $< -o $@
 
-# $(TMP)/kernel.elf: $(TMP)/kernel.o $(TMP)/memSetup.o $(TMP)/logging.o $(TMP)/kmemmgt.o $(KERNEL)/linker.ld
-# 	ld -m elf_i386 -T $(KERNEL)/linker.ld -o $(TMP)/kernel.elf $(TMP)/kernel.o $(TMP)/logging.o $(TMP)/memSetup.o $(TMP)/kmemmgt.o
+$(TMP)/time.o: $(TIME)/time.c | $(TMP)
+	gcc -m32 -ffreestanding -fno-stack-protector -c $< -o $@
 
 $(TMP)/gdt.o: $(KERNEL)/gdt.asm | $(TMP)
 	nasm -f elf32 $< -o $@

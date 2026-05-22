@@ -3,6 +3,7 @@
 #include "../io/iolibrary.h"
 #include "../logging.h"
 #include "./idt.h"
+#include "./intrStructs.h"
 
 #define PIC1		0x20		/* IO base address for master PIC */
 #define PIC2		0xA0		/* IO base address for slave PIC */
@@ -29,7 +30,7 @@
 uint8_t masterOffset;
 uint8_t slaveOffset;
 
-void defaultPICHandler(uint32_t* stack);
+void defaultPICHandler(struct InterruptStackFrame* stack);
 uint8_t irqNumToIntNum(uint8_t irqNum);
 
 bool linkIRQHandler(uint8_t irqNum, uint32_t address) {
@@ -117,11 +118,11 @@ uint8_t irqNumToIntNum(uint8_t irqNum) {
 	}
 }
 
-void defaultPICHandler(uint32_t* stack) {
+void defaultPICHandler(struct InterruptStackFrame* stack) {
 	kprint("Uninitialized PIC interrupt ");
-    kprint_hex(intNumToIRQNum(stack[12]));
+    kprint_hex(intNumToIRQNum(stack->intNum));
     kprint("\n");
 
-	sendEOIToPIC(intNumToIRQNum(stack[12]));
+	sendEOIToPIC(intNumToIRQNum(stack->intNum));
     return;
 }

@@ -9,6 +9,7 @@
 #include "./memory/vmm.h"
 #include "./memory/kalloc.h"
 #include "./interrupts/initInterruptHandlers.h"
+#include "./time/time.h"
 // #include "./gdt.asm"
 
 // extern void int0(void);
@@ -160,9 +161,14 @@ void continueInitialization() {
         kclear(); // DO NOT REMOVE NO MATTER WHAT; IF U REMOVE THIS THE SYSTEM WILL BE BRICKED
     }
     disablePIC();
-    kprint("hi");
+    
     enablePIC();
     // kprint_hex(*(uint32_t*)(0x0000000)); // test page fault, works
+    setPitPeriodic(11930); // fire (around) every  10 ms
+    initTimeIntrHandler();
+    kprint("hi");
+    sleep(1000);
+    kprint("1seclater");
 
     while (1) {}
 
