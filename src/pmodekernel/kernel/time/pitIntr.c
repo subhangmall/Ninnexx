@@ -10,6 +10,7 @@ extern volatile uint32_t ticks;
 
 void pitIntr(struct InterruptStackFrame* stack) {
     ticks++;
-    __asm__ volatile ( "outb %b0, %w1" : : "a"(PIC_EOI), "Nd"(PIC1_COMMAND) : "memory");
+    // __asm__ volatile ( "outb %b0, %w1" : : "a"(PIC_EOI), "Nd"(PIC1_COMMAND) : "memory");
+    sendEOIToPIC(0);
     return;
 }

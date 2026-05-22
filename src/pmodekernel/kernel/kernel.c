@@ -10,6 +10,7 @@
 #include "./memory/kalloc.h"
 #include "./interrupts/initInterruptHandlers.h"
 #include "./time/time.h"
+#include "./memory/pmm.h"
 // #include "./gdt.asm"
 
 // extern void int0(void);
@@ -146,8 +147,8 @@ void continueInitialization() {
     );
     kprint("hi!!!;D");
 
-    uint8_t* a = kalloc(5000);
-    kprint_hex((uint32_t) a);
+    // uint8_t* a = kalloc(5000);
+    // kprint_hex((uint32_t) a);
     // kprint_hex(1/0);
     // setIDTHandler(0, )
     initInterruptHandlers();
@@ -156,19 +157,29 @@ void continueInitialization() {
     // kprint_hex((uint32_t) *(uint8_t*) 0x12345567);
 
     // unmap lower half
-    for (int i = 0; i < 1024; i++) {
-        vmmRemovePage(i*4096);
-        kclear(); // DO NOT REMOVE NO MATTER WHAT; IF U REMOVE THIS THE SYSTEM WILL BE BRICKED
-    }
+    // for (int i = 0; i < 1024; i++) {
+    //     vmmRemovePage(i*4096);
+    //     kclear(); // DO NOT REMOVE NO MATTER WHAT; IF U REMOVE THIS THE SYSTEM WILL BE BRICKED
+    // }
+    ((struct PageDirectoryEntry*)(0xFFFFF000))->present = 0; // remove lower half mappign
+    asm volatile (
+        "mov %%cr3, %%eax\n\t"
+        "mov %%eax, %%cr3\n\t"
+        : : : "eax", "memory"
+    );
+
     disablePIC();
     
     enablePIC();
     // kprint_hex(*(uint32_t*)(0x0000000)); // test page fault, works
-    setPitPeriodic(11930); // fire (around) every  10 ms
+    setPitPeriodic(1193); // fire (around) every  10 ms
     initTimeIntrHandler();
     kprint("hi");
     sleep(1000);
     kprint("1seclater");
+    sleep(10000);
+    videoMemory[0] = 'a';
+    kprint("10seclater\0");
 
     while (1) {}
 

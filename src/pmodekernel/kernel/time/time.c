@@ -18,8 +18,11 @@ void initTimeIntrHandler() {
     linkIRQHandler(0, (uint32_t) pitIntr);
 }
 
+// __attribute__((aligned(4096)))
 void sleep(uint32_t ms) {
     uint32_t startingTime = ticks;
     // kprint_hex(startingTime);
-    while (((ticks-startingTime) * 1000) < ms * freq) {};
+    while (((ticks-startingTime) * 1000) < ms * freq) {
+        asm volatile("pause" ::: "memory");
+    };
 }
