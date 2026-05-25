@@ -126,8 +126,8 @@ bool vmmAllocatePage(uint32_t vAddr, uint32_t physAddr, uint8_t flags) {
     }
 }
 
-bool vmmAddPage(uint32_t vAddr, bool shouldZero) {
-    bool result = vmmAllocatePage(vAddr, pmmAllocNextFreePage(), VMM_WRITABLE);
+bool vmmAddPage(uint32_t vAddr, bool shouldZero, uint8_t flags) {
+    bool result = vmmAllocatePage(vAddr, pmmAllocNextFreePage(), flags);
     if (shouldZero && result) {
         vmmZeroPage(vAddr);
         return true;

@@ -6,7 +6,7 @@
 uint32_t freq;
 volatile uint32_t ticks = 0; 
 
-// credit to: https://github.com/dreamportdev/Osdev-Notes/blob/master/02_Architecture/08_Timers.md
+// credit to: https://github.com/dreamportdev/Osdev-Notes/blob/master/02_Architecture/08_Timers.md for this funcition
 void setPitPeriodic(uint32_t count) {
     outb(0x43, 0b00110100);
     outb(0x40, count & 0xFF); //low-byte

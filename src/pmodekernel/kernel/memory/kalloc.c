@@ -30,7 +30,7 @@ uint32_t nextVAddrToMap = 0xC1000000;
 // kernel allocation, for drivers and such
 void* kalloc(uint32_t numBytes) {
     if (heapStart == NULL) {
-        vmmAddPage(nextVAddrToMap, false);
+        vmmAddPage(nextVAddrToMap, false, VMM_WRITABLE);
         struct KallocHeader* head = (struct KallocHeader*)nextVAddrToMap;
         head->size = 4096-sizeof(struct KallocHeader);
         head->isFree = true;
@@ -52,7 +52,7 @@ void* kalloc(uint32_t numBytes) {
                     // kprint("Allocating page (k): ");
                     // kprint_hex(i);
                     kprint("\n");
-                    if (!vmmAddPage(i, false)) {
+                    if (!vmmAddPage(i, false, VMM_WRITABLE)) {
                         kprint("OUT OF MEMORY \n");
                         return NULL;
                     }
