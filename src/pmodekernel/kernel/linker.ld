@@ -3,7 +3,7 @@ ENTRY(kentry)
 KRNL_BASE = 0xC0000000;
 
 SECTIONS {
-  . = 0x1000;       /* Load address for kernel in memory */
+  . = 0x100000;       /* Load address for kernel in memory */
 
   .boot : {
     *(.boot)

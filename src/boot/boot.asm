@@ -98,20 +98,15 @@ main:
     mov ss, ax
     mov esp, 0x3F0000   
 
-    mov edi, 0xB8002
+    ; mov edi, 0xB8002
 
-    mov ax, 'D'         ; ASCII 'A'
-    mov ah, 0xF0       ; attribute byte: black background, green foreground
-    mov [edi], ax    
+    ; mov ax, 'D'         ; ASCII 'A'
+    ; mov ah, 0xF0       ; attribute byte: black background, green foreground
+    ; mov [edi], ax    
 
-    ; mov edi, 0xB8000     ; start of VGA text memory
+    call copy_data_to_high_half
 
-    ; ; Write character 'A' in green on black
-    ; mov al, 'I'          ; ASCII 'A'
-    ; mov ah, 0x02         ; attribute byte: black background, green foreground
-    ; mov [edi], ax        ; write both bytes
-
-    jmp 0x08:0x00001000
+    jmp 0x08:0x00100000
 
     ; mov edi, 0xB8002
 
@@ -606,6 +601,26 @@ disk_error:
     ; mov si, text_hdd_was_not_read
     ; call print16r
     hlt
+
+copy_data_to_high_half:
+    [bits 32]
+    xor eax, eax
+    xor ebx, ebx
+    xor ecx, ecx
+    mov ebx, 0x1000
+    mov ecx, 0x100000
+    call cpy_loop
+    ret
+
+cpy_loop:
+    [bits 32]
+    mov al, [ebx]
+    mov [ecx], al
+    inc ebx
+    inc ecx
+    cmp ebx, 0x10000
+    jne cpy_loop
+    ret
 
 
 ; mmap_err:

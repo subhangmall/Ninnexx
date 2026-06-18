@@ -137,17 +137,17 @@ void continueInitialization() {
     // kprint_hex((uint32_t) *(uint8_t*) 0x12345567);
 
     // unmap lower half
-    for (int i = 0; i < 1024; i++) {
-        vmmRemovePage(i*4096);
-        uint32_t vAddr = i*4096 + 0xC0000000;
-        asm volatile (
-            "invlpg (%0)"
-            :
-            : "r" (vAddr)
-            : "memory"
-        );
-        kclear(); // DO NOT REMOVE NO MATTER WHAT; IF U REMOVE THIS THE SYSTEM WILL BE BRICKED
-    }
+    // for (int i = 0; i < 1024; i++) {
+    //     vmmRemovePage(i*4096);
+    //     uint32_t vAddr = i*4096 + 0xC0000000;
+    //     asm volatile (
+    //         "invlpg (%0)"
+    //         :
+    //         : "r" (vAddr)
+    //         : "memory"
+    //     );
+    //     kclear(); // DO NOT REMOVE NO MATTER WHAT; IF U REMOVE THIS THE SYSTEM WILL BE BRICKED
+    // }
     // disablePIC();
 
     // ((struct PageDirectoryEntry*)(0xFFFFF000))->present = 0; // remove lower half mappign
@@ -165,16 +165,17 @@ void continueInitialization() {
     initTimeIntrHandler();
 
     // reaload cr3
-    // uint32_t cr3;
-    // asm volatile("mov %%cr3, %0" : "=r"(cr3));
-    // asm volatile("mov %0, %%cr3" :: "r"(cr3));
+    // uint32_t* a = (uint32_t*) kalloc(1000);
+    // kprint_hex((uint32_t) a);
+    // kprint_hex();
 
-    kprint("hi");
-    sleep(1000);
-    kprint("1seclater");
-    sleep(10000);
-    // asm volatile("cli");
-    kprint("1seclater");
+
+    // kprint("hi");
+    // sleep(1000);
+    // kprint("1seclater");
+    // sleep(10000);
+    // // asm volatile("cli");
+    // kprint("1seclater");
     kprint("esp: ");
     uint32_t esp;
     asm volatile (
@@ -185,7 +186,11 @@ void continueInitialization() {
         : "eax"
     );
     kprint_hex(esp);
-    sleep(1000);
+    // sleep(1000);
+
+    // kprint_hex((uint32_t)&setPitPeriodic);
+    // kprint_hex((uint32_t)&setIDTHandler);
+    
 
     while (1) {}
 

@@ -46,9 +46,9 @@ __attribute__((aligned(PAGE_SIZE)))
 __attribute__((section(".boot.data")))
 struct PageTableEntry firstKernelPageTable[PAGE_SIZE/sizeof(struct PageTableEntry)];
 
-__attribute__((aligned(PAGE_SIZE)))
-__attribute__((section(".boot.data")))
-struct PageTableEntry firstKernelPageTableHighHalf[PAGE_SIZE/sizeof(struct PageTableEntry)];
+// __attribute__((aligned(PAGE_SIZE)))
+// __attribute__((section(".boot.data")))
+// struct PageTableEntry firstKernelPageTableHighHalf[PAGE_SIZE/sizeof(struct PageTableEntry)];
 
 __attribute__((section(".boot"))) void initMemory(void (*functionToJumpToAfterCompletion)()) {
     struct PageDirectoryEntry pde = {
