@@ -71,7 +71,9 @@ section .text
 global gdtFlush
 gdtFlush:
     lgdt [gdt_descriptor]
+    jmp 0x08:.refresh_segments
 
+    .refresh_segments: 
     mov ax, 0x10
     mov ds, ax
     mov es, ax

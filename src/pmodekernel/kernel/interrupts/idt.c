@@ -363,11 +363,28 @@ void commonHandler(struct InterruptStackFrame* stack) {
 
 void enableInterrupts() {
     asm volatile (
-        "lidt %0\n\t"
         "sti"
+        :
+        :
+        : 
+    );
+}
+
+void loadIDTR() {
+    asm volatile (
+        "lidt %0\n\t"
         :
         : "m" (idtr)
         : 
+    );
+}
+
+
+
+void disableInterrupts() {
+    asm volatile (
+        "cli"
+        :::
     );
 }
 

@@ -142,20 +142,19 @@ __attribute__((section(".boot"))) void initMemory(void (*functionToJumpToAfterCo
     uint32_t kPDAddress = (uint32_t)&kernelPageDirectory;
 
     asm volatile (
-        "mov %0, %%cr3\n\t"
+        "mov %0, %%cr3\n\t" // page directory address
         "mov %%cr0, %%eax\n\t"
-        "or $0x80000000, %%eax\n\t"
+        "or $0x80000000, %%eax\n\t" // enable paging
         "mov %%eax, %%cr0\n\t"
         "jmp 1f\n\t" // to clear prefetched instructions
         "1:\n\t"
-        // "mov $0xC0090000, %%esp\n\t"
-        "addl $0xC0000000, %%esp\n\t"
-        "push %1\n\t" // ADDRESS TO RETURN TO
-        "push %2\n\t"
+        "addl $0xC0000000, %%esp\n\t" // stack to higher half
+        "push %1\n\t" // ADDRESS TO RETURN TO after chhs finishes
+        "push %2\n\t" // 2-5 are arguments
         "push %3\n\t"
         "push %4\n\t"
         "push %5\n\t"
-        "jmp *%6\n\t"        
+        "jmp *%6\n\t" // jump to continuedHHsetup
         :
         :  "r" (kPDAddress), "r" (&kernelPageDirectory), "r" (&firstPageDirectoryEntry), "m" (e820StartAddress), "m"(e820LenAddr), "r"(functionToJumpToAfterCompletion), "r"(continuedHigherHalfMemSetup)
         // :  "r" (kPDAddress)

@@ -31,44 +31,55 @@ __attribute__((section(".boot"))) void kentry(uint32_t dummyCS, uint32_t e820Len
 }
 
 void continueInitialization() {  
-    // kclear();
+    // setup screen
+    videoMemory = (volatile char*) vmmAllocatePhysicalRange(0xB8000, 4000);
+    kclear();
 
+    // remap gdt to higher half
+    gdtFlush();
+
+    // setup interrupts/pic
     setupInterruptStructures();
     initPIC(0x20, 0x28);
-    // disablePIC();
+    initInterruptHandlers();
+    loadIDTR();
     enableInterrupts();
+    enablePIC();
+    
+    // time subsystem to set frequency
+    setPitPeriodic(1193); // fire (around) every  10 ms
+
+    // a[0]= 'A';
+    // kprint_hex(mmioNextFree);
+    // struct PageTableEntry* aPTE = (struct PageTableEntry*) (0xFFC00000 + (((uint32_t)a) >> 12));
+    // kprint_hex(aPTE->pageAddress << 12);
+    // kprint("\n");
+    // kprint_hex((uint32_t)a);
+    
+
+    // unmap lower half
+    struct PageDirectoryEntry* lowHalfPDE = (struct PageDirectoryEntry*) 0xFFFFF000;
+    lowHalfPDE->present=0;
+    asm volatile (
+        "mov %%cr3, %%eax\n\t"
+        "mov %%eax, %%cr3"
+        :
+        :
+        : "eax"
+    );
+
+
     // asm volatile (
-    //     "int $0x40"
+    //     "int $0x01"
     //     :
     //     :
     //     :
     // );
-    // kprint("hi!!!;D");
-
-    // uint8_t* a = kalloc(5000);
-    // kprint_hex((uint32_t) a);
-    // kprint_hex(1/0);
-    // setIDTHandler(0, )
-    initInterruptHandlers();
-    gdtFlush(); // move gdt to higher half
-    // kprint_hex(1/0);
-    // kprint_hex((uint32_t) *(uint8_t*) 0x12345567);
-    kprint("hi");
-
-    // kprint_hex(*(uint32_t*)(0x0000000)); // test page fault, works
-    setPitPeriodic(1193); // fire (around) every  10 ms
-    videoMemory = (volatile char*) vmmAllocatePhysicalRange(0xB8000, 4000);
-
-    // reaload cr3
-    // uint32_t* a = (uint32_t*) kalloc(1000);
-    // kprint_hex((uint32_t) a);
-    // kprint_hex();
-
 
     // kprint("hi");
     
     sleep(2000);
-    kprint("1seclater");
+    // kprint("1seclater");
     // sleep(10000);
     // kprint("10seclater");
     // kprint("esp: ");

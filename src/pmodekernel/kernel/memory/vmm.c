@@ -5,7 +5,7 @@
 #include <kernel.h>
 #include <kernel/memory.h>
 
-static uint32_t mmioNextFree = MMIO_VIRTUAL_SPACE_BASE;
+uint32_t mmioNextFree = MMIO_VIRTUAL_SPACE_BASE;
 
 void vmmZeroPage(uint32_t vAddr);
 
@@ -105,14 +105,6 @@ bool vmmAllocatePage(uint32_t vAddr, uint32_t physAddr, uint8_t flags) {
             return true;
 
         } else {
-            // if (shouldZero) {
-            //     vAddr &= 0b11111111111111111111000000000000;
-            //     uint8_t* pageBytes = (uint8_t*) vAddr;
-            //     for (int i = 0; i < 4096; i++) {
-            //         pageBytes[i] = 0x00;
-            //     }
-            // }
-
             kprint("page already allocated\n");
             return true; // page already allocated
         }

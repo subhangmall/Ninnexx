@@ -25,6 +25,8 @@ struct IdtrStruct {
 
 void setupInterruptStructures();
 void enableInterrupts();
+void disableInterrupts();
+void loadIDTR();
 void setIDTHandler(int isrNum, int handlerAddr);
 extern struct IdtrStruct idtr __attribute__((aligned(16)));
 extern struct InterruptDescriptor idt[256] __attribute__((aligned(16)));

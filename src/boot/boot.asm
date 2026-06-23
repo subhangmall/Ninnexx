@@ -597,9 +597,9 @@ disk_error:
     ; ; Write character 'A' in green on black, TO SHOW AN ERROR
     ; mov si, 'A'
     
-    mov ax, 'A'         ; ASCII 'A'
-    mov ah, 0xF0       ; attribute byte: black background, green foreground
-    mov [edi], ax        ; write both bytes
+    ; mov ax, 'A'         ; ASCII 'A'
+    ; mov ah, 0xF0       ; attribute byte: black background, green foreground
+    ; mov [edi], ax        ; write both bytes
 
     ; handle error here
     ; mov si, text_hdd_was_not_read
