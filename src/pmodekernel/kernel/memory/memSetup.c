@@ -149,6 +149,7 @@ __attribute__((section(".boot"))) void initMemory(void (*functionToJumpToAfterCo
         "jmp 1f\n\t" // to clear prefetched instructions
         "1:\n\t"
         "addl $0xC0000000, %%esp\n\t" // stack to higher half
+        "addl $0xC0000000, %%ebp\n\t"
         "push %1\n\t" // ADDRESS TO RETURN TO after chhs finishes
         "push %2\n\t" // 2-5 are arguments
         "push %3\n\t"

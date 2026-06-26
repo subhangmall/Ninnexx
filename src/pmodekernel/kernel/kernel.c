@@ -13,6 +13,7 @@
 #include <kernel/interrupts/initInterruptHandlers.h>
 #include <kernel/time/time.h>
 #include <kernel/memory/pmm.h>
+#include <kernel/genericDrivers/ps2keyboard.h>
 // #include "./gdt.asm"
 
 // extern void int0(void);
@@ -32,11 +33,22 @@ __attribute__((section(".boot"))) void kentry(uint32_t dummyCS, uint32_t e820Len
 
 void continueInitialization() {  
     // setup screen
-    videoMemory = (volatile char*) vmmAllocatePhysicalRange(0xB8000, 4000);
     kclear();
 
     // remap gdt to higher half
     gdtFlush();
+
+    // struct PageDirectoryEntry* lowHalfPDE = (struct PageDirectoryEntry*) 0xFFFFF000;
+    // lowHalfPDE->present=0;
+    // asm volatile (
+    //     "mov %%cr3, %%eax\n\t"
+    //     "mov %%eax, %%cr3"
+    //     :
+    //     :
+    //     : "eax"
+    // );
+
+    // kprint("hi");
 
     // setup interrupts/pic
     setupInterruptStructures();
@@ -49,6 +61,11 @@ void continueInitialization() {
     // time subsystem to set frequency
     setPitPeriodic(1193); // fire (around) every  10 ms
 
+    videoMemory = (volatile char*) vmmAllocatePhysicalRange(0xB8000, 4000);
+
+    // asm volatile ("int $0x01");
+    // kprint_hex(*(uint32_t*) 0xA0000000);
+
     // a[0]= 'A';
     // kprint_hex(mmioNextFree);
     // struct PageTableEntry* aPTE = (struct PageTableEntry*) (0xFFC00000 + (((uint32_t)a) >> 12));
@@ -58,15 +75,6 @@ void continueInitialization() {
     
 
     // unmap lower half
-    struct PageDirectoryEntry* lowHalfPDE = (struct PageDirectoryEntry*) 0xFFFFF000;
-    lowHalfPDE->present=0;
-    asm volatile (
-        "mov %%cr3, %%eax\n\t"
-        "mov %%eax, %%cr3"
-        :
-        :
-        : "eax"
-    );
 
 
     // asm volatile (
@@ -76,12 +84,15 @@ void continueInitialization() {
     //     :
     // );
 
-    // kprint("hi");
+    kprint("hi");
     
-    sleep(2000);
+    // sleep(2000);
+    // videoMemory[0] = 'a';
     // kprint("1seclater");
     // sleep(10000);
     // kprint("10seclater");
+    // initKeyboard();
+    // kprint("hi");
     // kprint("esp: ");
     // uint32_t esp;
     // asm volatile (

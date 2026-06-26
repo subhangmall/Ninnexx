@@ -5,6 +5,9 @@
 #include <kernel/memory.h>
 #include <kernel/logging.h>
 
+extern uint32_t _kernel_phys_end;
+extern uint32_t _kernel_phys_start;
+
 void continuedHigherHalfMemSetup(uint32_t e820LenAddr, uint32_t e820StartAddress, uint32_t firstKernelPageTableAddr, uint32_t kernelPageDirectoryAddr) {
     parseE820Output(e820LenAddr, e820StartAddress);
     kprint("len addr:");
@@ -15,9 +18,15 @@ void continuedHigherHalfMemSetup(uint32_t e820LenAddr, uint32_t e820StartAddress
     // *((uint8_t*)0xB8002) = 'p';
     // *((uint8_t*)0xB8003) = 0x0F;
 
+    uint32_t krnlStart = (uint32_t) & _kernel_phys_start;
+    
+    uint32_t krnlEnd = (uint32_t) & _kernel_phys_end;
+
+    // kprint_hex(krnlEnd);
+
     pmmSet(firstKernelPageTableAddr, PMM_UNAVAILABLE);
     pmmSet(kernelPageDirectoryAddr, PMM_UNAVAILABLE);
-    for (int i = 0; i < 0x400000; i+= PAGE_SIZE) {
+    for (int i = (krnlStart & 0xFFFFF000); i < (krnlEnd | 0x00000FFF); i+= PAGE_SIZE) {
         pmmSet(i, PMM_UNAVAILABLE);
     }
 

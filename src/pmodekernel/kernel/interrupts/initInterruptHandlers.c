@@ -23,5 +23,4 @@ void initInterruptHandlers() {
     setIDTHandler(0, (uint32_t) &divByZeroException);
     setIDTHandler(14, (uint32_t) &pageFault);
     initTimeIntrHandler();
-    
 }

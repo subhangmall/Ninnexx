@@ -549,8 +549,8 @@ hdd_read:
     mov cl, 2               ; start at sector 2
 
     mov ah, 0x02            ; BIOS read
-    ; mov al, KERN_SECTORS  
-    mov al, 43
+    mov al, KERN_SECTORS  
+    ; mov al, 43
     ; add al, 10      ; FOR TESTING    ; read 1 sector
     int 0x13
     jc disk_error
