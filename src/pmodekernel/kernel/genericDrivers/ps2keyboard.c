@@ -43,13 +43,33 @@ uint8_t currentState;
 
 typedef enum Keys {
     A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z, 
-    one, two, three, four, five, six, seven, eight, nine, zero
+    one, two, three, four, five, six, seven, eight, nine, zero,
+    space, enter
 };
 
-static char KeysAscii[] = {
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'
+static char VisibleKeysAscii[] = {
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ' '
 };
+
+static char VisibleKeysAsciiShift[] = {
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+    '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', ' '
+};
+
+char getCharFromEvent(struct KeyEvent ev) {
+    if (ev.code >= sizeof(VisibleKeysAscii)) {
+        return '\0';
+    }
+
+    if (ev.modifiers & R_SHIFT_MASK || ev.modifiers & L_SHIFT_MASK) {
+        return VisibleKeysAsciiShift[ev.code];
+    } else if ((ev.modifiers & CAPS_LOCK_MASK) && ev.code < 26){
+        return VisibleKeysAsciiShift[ev.code];
+    } else {
+        return VisibleKeysAscii[ev.code];
+    }
+}
 
 void keyboardIRQHandler(struct InterruptStackFrame* stack) {
     uint8_t scancode = inb(0x60);
@@ -57,8 +77,6 @@ void keyboardIRQHandler(struct InterruptStackFrame* stack) {
 
     if (scancode == 0xE0) {
         currentState = PREFIX_STATE;
-        // update state, exit
-        // kprint("e");
         sendEOIToPIC(0x01);
         return;
     }
@@ -166,15 +184,197 @@ void keyboardIRQHandler(struct InterruptStackFrame* stack) {
         goto character;
     }
 
+    if (scancode == 0x30) {
+        ev.code = B;
+        goto character;
+    }
+
+    if (scancode == 0x2E) {
+        ev.code = C;
+        goto character;
+    }
+
+    if (scancode == 0x20) {
+        ev.code = D;
+        goto character;
+    }
+
+    if (scancode == 0x12) {
+        ev.code = E;
+        goto character;
+    }
+
+    if (scancode == 0x21) {
+        ev.code = F;
+        goto character;
+    }
+
+    if (scancode == 0x22) {
+        ev.code = G;
+        goto character;
+    }
+
+    if (scancode == 0x23) {
+        ev.code = H;
+        goto character;
+    }
+
+    if (scancode == 0x17) {
+        ev.code = I;
+        goto character;
+    }
+
+    if (scancode == 0x24) {
+        ev.code = J;
+        goto character;
+    }
+
+    if (scancode == 0x25) {
+        ev.code = K;
+        goto character;
+    }
+
+    if (scancode == 0x26) {
+        ev.code = L;
+        goto character;
+    }
+
+    if (scancode == 0x32) {
+        ev.code = M;
+        goto character;
+    }
+
+    if (scancode == 0x31) {
+        ev.code = N;
+        goto character;
+    }
+
+    if (scancode == 0x18) {
+        ev.code = O;
+        goto character;
+    }
+
+    if (scancode == 0x19) {
+        ev.code = P;
+        goto character;
+    }
+
+    if (scancode == 0x10) {
+        ev.code = Q;
+        goto character;
+    }
+
+    if (scancode == 0x13) {
+        ev.code = R;
+        goto character;
+    }
+
+    if (scancode == 0x1F) {
+        ev.code = S;
+        goto character;
+    }
+
+    if (scancode == 0x14) {
+        ev.code = T;
+        goto character;
+    }
+
+    if (scancode == 0x16) {
+        ev.code = U;
+        goto character;
+    }
+
+    if (scancode == 0x2F) {
+        ev.code = V;
+        goto character;
+    }
+
+    if (scancode == 0x11) {
+        ev.code = W;
+        goto character;
+    }
+
+    if (scancode == 0x2D) {
+        ev.code = X;
+        goto character;
+    }
+
+    if (scancode == 0x15) {
+        ev.code = Y;
+        goto character;
+    }
+
+    if (scancode == 0x2C) {
+        ev.code = Z;
+        goto character;
+    }
+
+    if (scancode == 0x0B) {
+        ev.code = zero;
+        goto character;
+    }
+
+    if (scancode == 0x02) {
+        ev.code = one;
+        goto character;
+    }
+
+    if (scancode == 0x03) {
+        ev.code = two;
+        goto character;
+    }
+
+    if (scancode == 0x04) {
+        ev.code = three;
+        goto character;
+    }
+
+    if (scancode == 0x05) {
+        ev.code = four;
+        goto character;
+    }
+
+    if (scancode == 0x06) {
+        ev.code = five;
+        goto character;
+    }
+
+    if (scancode == 0x07) {
+        ev.code = six;
+        goto character;
+    }
+
+    if (scancode == 0x08) {
+        ev.code = seven;
+        goto character;
+    }
+
+    if (scancode == 0x09) {
+        ev.code = eight;
+        goto character;
+    }
+
+    if (scancode == 0xA) {
+        ev.code = nine;
+        goto character;
+    }
+
+    if (scancode == 0x39) {
+        ev.code = space;
+        goto character;
+    }
+
+    goto end; // if character fits none of these descriptions
+
     character:
         ev.modifiers = currentModifiers;
         if (bufferPosition++ ==  255)
             bufferPosition = 0;
         keyBuffer[bufferPosition] = ev;
+        kputc(getCharFromEvent(keyBuffer[bufferPosition]));
         goto end;
 
     end:
-        kprint_hex(keyBuffer[bufferPosition].code);
         sendEOIToPIC(0x01);
         return;
     
@@ -182,6 +382,18 @@ void keyboardIRQHandler(struct InterruptStackFrame* stack) {
 
 void initKeyboard() {
     // SCAN CODE 1
+    
+    // do {
+    // outb(DATA_REG, 0xF0);
+    // } while (inb(DATA_REG) != CMD_ACKNOWLEDGED);
+    // sendEOIToPIC(0x01);
+    // do {
+    // outb(DATA_REG, 0x01);
+    // } while (inb(DATA_REG) != CMD_ACKNOWLEDGED);
+    // sendEOIToPIC(0x01);
+    // kprint("hidwe");
+    // sendEOIToPIC(0x01);
+
     currentState = NORMAL_STATE;
     currentModifiers = 0;
     linkIRQHandler(0x01, (uint32_t) &keyboardIRQHandler);

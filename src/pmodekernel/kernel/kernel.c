@@ -9,19 +9,15 @@
 #include <kernel/interrupts/idt.h>
 #include <kernel/interrupts/pic.h>
 #include <kernel/memory/vmm.h>
-#include <kernel/memory/kalloc.h>
+// #include <kernel/memory/kalloc.h>
 #include <kernel/interrupts/initInterruptHandlers.h>
 #include <kernel/time/time.h>
 #include <kernel/memory/pmm.h>
 #include <kernel/genericDrivers/ps2keyboard.h>
-// #include "./gdt.asm"
+#include <kernel/genericDrivers/atapio.h>
+#include <kernel/filesystem/fat_filelib.h>
+#include <stdlib.h>
 
-// extern void int0(void);
-// #include "./memory/kmemmgt.h"
-// #include "./logging.h"
-// #include "./idt.h"
-// #include "./pic.h"
-// #include "./basicInterruptHandlers.h"
 extern void gdtFlush();
 
 __attribute__((section(".boot"))) void kentry(uint32_t dummyCS, uint32_t e820LenAddr, uint32_t e820StartAddress);
@@ -32,7 +28,7 @@ __attribute__((section(".boot"))) void kentry(uint32_t dummyCS, uint32_t e820Len
 }
 
 void continueInitialization() {  
-    // setup screen
+    videoMemory = (volatile char*) vmmAllocatePhysicalRange(0xB8000, 4000);
     kclear();
 
     // remap gdt to higher half
@@ -56,57 +52,20 @@ void continueInitialization() {
     initInterruptHandlers();
     loadIDTR();
     enableInterrupts();
+    initKeyboard();
     enablePIC();
     
     // time subsystem to set frequency
     setPitPeriodic(1193); // fire (around) every  10 ms
 
-    videoMemory = (volatile char*) vmmAllocatePhysicalRange(0xB8000, 4000);
-
-    // asm volatile ("int $0x01");
-    // kprint_hex(*(uint32_t*) 0xA0000000);
-
-    // a[0]= 'A';
-    // kprint_hex(mmioNextFree);
-    // struct PageTableEntry* aPTE = (struct PageTableEntry*) (0xFFC00000 + (((uint32_t)a) >> 12));
-    // kprint_hex(aPTE->pageAddress << 12);
-    // kprint("\n");
-    // kprint_hex((uint32_t)a);
-    
-
-    // unmap lower half
-
-
-    // asm volatile (
-    //     "int $0x01"
-    //     :
-    //     :
-    //     :
-    // );
-
-    kprint("hi");
-    kprint("hi");
-    
-    // sleep(2000);
-    // videoMemory[0] = 'a';
-    // kprint("1seclater");
-    // sleep(10000);
-    // kprint("10seclater");
-    // initKeyboard();
-    // kprint("hi");
-    // kprint("esp: ");
-    // uint32_t esp;
-    // asm volatile (
-    //     "mov %%esp, %%eax\n\t"
-    //     "mov %%eax, %0\n\t"
-    //     : "=m" (esp)
-    //     : 
-    //     : "eax"
-    // );
-    // kprint_hex(esp);
-    // uint32_t* a = (uint32_t*)kalloc(10000);
+    if (fl_attach_media(fatReadWrapper, fatWriteWrapper) != FAT_INIT_OK) {
+        kprint("Error mounting FAT filesystem.");
+    }
+    fl_init();
 
     
+
+
 
     while (1) {}
 

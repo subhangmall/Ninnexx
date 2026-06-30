@@ -78,7 +78,7 @@ void* kalloc(uint32_t numBytes) {
     }
 }
 
-void free(void* ptr) {
+void kfree(void* ptr) {
     if (ptr == NULL) return;
 
     uint32_t addr = (uint32_t) ptr;

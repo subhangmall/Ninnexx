@@ -7,5 +7,6 @@
 
 
 void* kalloc(uint32_t numBytes);
+void kfree(void* ptr);
 
 #endif

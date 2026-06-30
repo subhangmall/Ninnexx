@@ -61,6 +61,33 @@ void kprint_hex(uint32_t n) {
     // asm volatile("sti");
 }
 
+void kprint_hexl(uint32_t n) {
+    // asm volatile("cli");
+    char hexChars[] = "0123456789abcdef";
+    char result[11];
+
+    // result[-1] = '\0';
+    result[0] = '0';
+    result[1] = 'x';
+    result[10] = '\0';
+
+    for (int i = 2; i <= 9; i++) {
+        result[11-i] = hexChars[n & 0x0F];
+        n >>= 4;
+    }
+
+    kprint(result);
+}
+
+void kprint_udec(int n) {
+    
+}
+
+void kprint_dec(int n) {
+
+}
+
+
 void kprint_hex64(uint64_t n) {
     // asm volatile("cli");
     char hexChars[] = "0123456789ABCDEF";
