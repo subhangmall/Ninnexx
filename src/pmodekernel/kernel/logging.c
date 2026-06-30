@@ -10,13 +10,9 @@ static int cursor = 0;
 volatile uint16_t*  videoMemory = (volatile uint16_t*)VGA_MEMORY_PHYS;
 
 void kclear() {
-    // *((uint8_t*)0xB8002) = 'q';
-    // *((uint8_t*)0xB8003) = 0x0F;
     for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
         videoMemory[i] = ((uint16_t)WHITE_ON_BLACK << 8) | ' ';
     }
-    // *((uint8_t*)0xB8002) = '/';
-    // *((uint8_t*)0xB8003) = 0x0F;
     cursor = 0;
 }
 
@@ -80,7 +76,7 @@ void kprint_hexl(uint32_t n) {
 }
 
 void kprint_udec(int n) {
-    
+
 }
 
 void kprint_dec(int n) {

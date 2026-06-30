@@ -112,13 +112,13 @@ void parseE820Output(uint32_t e820LenAddr, uint32_t e820StartAddress) {
 
     mergeRegions();
 
-    for (int i = 0; i < usableRegionsCurrentLength; i++) {
-        kprint("Start range: "); 
-        kprint_hex64(usableRegions[i].base);
-        kprint("\nEnd range: ");
-        kprint_hex64(usableRegions[i].length + usableRegions[i].base);
-        kprint("\n");
-    }
+    // for (int i = 0; i < usableRegionsCurrentLength; i++) {
+    //     kprint("Start range: "); 
+    //     kprint_hex64(usableRegions[i].base);
+    //     kprint("\nEnd range: ");
+    //     kprint_hex64(usableRegions[i].length + usableRegions[i].base);
+    //     kprint("\n");
+    // }
 
     // kprint("Usable list length: ");
     // kprint_hex(usableRegionsCurrentLength);

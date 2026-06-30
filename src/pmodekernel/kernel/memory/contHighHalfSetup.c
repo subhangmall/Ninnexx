@@ -4,16 +4,17 @@
 #include <kernel.h>
 #include <kernel/memory.h>
 #include <kernel/logging.h>
+#include <stdio.h>
 
 extern uint32_t _kernel_phys_end;
 extern uint32_t _kernel_phys_start;
 
 void continuedHigherHalfMemSetup(uint32_t e820LenAddr, uint32_t e820StartAddress, uint32_t firstKernelPageTableAddr, uint32_t kernelPageDirectoryAddr) {
     parseE820Output(e820LenAddr, e820StartAddress);
-    kprint("len addr:");
-    kprint_hex(e820LenAddr);
-    kprint("\nstart addr:");
-    kprint_hex(e820StartAddress);
+    printf("len addr: %X\nstart addr: %X", e820LenAddr, e820StartAddress);
+    // kprint_hex(e820LenAddr);
+    // kprint("\nstart addr:");
+    // kprint_hex(e820StartAddress);
 
     // *((uint8_t*)0xB8002) = 'p';
     // *((uint8_t*)0xB8003) = 0x0F;

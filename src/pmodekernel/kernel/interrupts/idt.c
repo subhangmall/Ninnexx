@@ -2,6 +2,7 @@
 #include <kernel/logging.h>
 #include <kernel/interrupts/intrStructs.h>
 #include <kernel.h>
+#include <stdio.h>
 // #define NULL ((void*)0)
 
 
@@ -321,10 +322,7 @@ void (*idtRequestDispatchers[256])(void) = {
 void commonHandler(struct InterruptStackFrame* stack);
 
 void defaultFun(struct InterruptStackFrame* stack) {
-    kprint("Uninitialized interrupt ");
-    kprint_hex(stack->intNum);
-    kprint(" with (potential) error code ");
-    kprint_hex(stack->errNum);
+    printf("Uninitialized interrupt %X with (potential) error code %X\n", stack->intNum, stack->errNum);
 }
 
 void setInterruptDispatcher(uint8_t intNum, uint32_t addr, uint16_t segSelector, uint8_t gateType, uint8_t dpl);

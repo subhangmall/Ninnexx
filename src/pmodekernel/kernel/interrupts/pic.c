@@ -4,6 +4,7 @@
 #include <kernel/logging.h>
 #include <kernel/interrupts/idt.h>
 #include <kernel/interrupts/intrStructs.h>
+#include <stdio.h>
 
 #define PIC1		0x20		/* IO base address for master PIC */
 #define PIC2		0xA0		/* IO base address for slave PIC */
@@ -119,9 +120,7 @@ uint8_t irqNumToIntNum(uint8_t irqNum) {
 }
 
 void defaultPICHandler(struct InterruptStackFrame* stack) {
-	kprint("Uninitialized PIC interrupt ");
-    kprint_hex(intNumToIRQNum(stack->intNum));
-    kprint("\n");
+	printf("Uninitialized PIC interrupt %H\n", intNumToIRQNum(stack->intNum));
 
 	sendEOIToPIC(intNumToIRQNum(stack->intNum));
     return;

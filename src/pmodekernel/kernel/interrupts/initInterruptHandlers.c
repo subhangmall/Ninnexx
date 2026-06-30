@@ -3,9 +3,10 @@
 #include <kernel/interrupts/idt.h>
 #include <kernel/interrupts/intrStructs.h>
 #include <kernel/time/time.h>
+#include <stdio.h>
 
 void divByZeroException(struct InterruptStackFrame* stack) {
-    kprint("Division by zero error! Halting the system!");
+    printf("Division by zero error! Halting the system!\n");
     asm volatile (
         "hlt"
         :
@@ -15,7 +16,7 @@ void divByZeroException(struct InterruptStackFrame* stack) {
 }
 
 void pageFault(struct InterruptStackFrame* stack) {
-    kprint("Page fault! Halting the system!");
+    printf("Page fault! Halting the system!\n");
     asm volatile ("hlt");
 }
 

@@ -98,19 +98,19 @@ bool vmmAllocatePage(uint32_t vAddr, uint32_t physAddr, uint8_t flags) {
             //         pageBytes[i] = 0x00;
             //     }
             // }
-            kprint("Allocated page at ");
-            // *vAddr = 
-            kprint_hex(vAddr);
-            kprint("\n");
-            return true;
+            // kprint("Allocated page at ");
+            // // *vAddr = 
+            // kprint_hex(vAddr);
+            // kprint("\n");
+            // return true;
 
         } else {
-            kprint("page already allocated\n");
+            // kprint("page already allocated\n");
             return true; // page already allocated
         }
         
     } else {
-        kprint("allocating page\n");
+        // kprint("allocating page\n");
         // page table not present
        if (!createNewPageTable(vAddr)) return false;
 

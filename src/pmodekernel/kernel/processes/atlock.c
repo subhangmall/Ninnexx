@@ -1,0 +1,22 @@
+#include <stdint.h>
+#include <kernel/processes/atlock.h>
+
+void acquireLock(atlock* l) {
+    asm volatile (
+        "mov %1, %%ah\n\t"
+        "mov %1, %%al\n\t"
+        "loop:\n\t"
+        "xchgb %%ah, %0\n\t"
+        "cmp %%ah, %%al\n\t"
+        "pause\n\t"
+        "je loop\n\t"
+        : "+m" (*l)
+        : "i" (ATLOCK_LOCKED)
+        : "eax", "memory"
+    );
+}
+
+void releaseLock(atlock* l) {
+    asm volatile("" ::: "memory");
+    *l = ATLOCK_UNLOCKED;
+}

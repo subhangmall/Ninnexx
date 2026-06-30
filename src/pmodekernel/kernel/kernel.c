@@ -58,13 +58,13 @@ void continueInitialization() {
     // time subsystem to set frequency
     setPitPeriodic(1193); // fire (around) every  10 ms
 
+    identify();
     if (fl_attach_media(fatReadWrapper, fatWriteWrapper) != FAT_INIT_OK) {
-        kprint("Error mounting FAT filesystem.");
+        printf("Error mounting FAT filesystem.\n");
     }
     fl_init();
 
     
-
 
 
     while (1) {}

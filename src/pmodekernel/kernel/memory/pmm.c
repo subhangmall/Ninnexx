@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <kernel.h>
 #include <kernel/memory.h>
+#include <kernel/processes/atlock.h>
 
 uint8_t physicalPageRecord[0xFFFFFFFF/PAGE_SIZE/8];
 // static uint32_t mmioNextFree = MMIO_VIRTUAL_SPACE_BASE;
@@ -38,16 +39,19 @@ struct PageTableEntry {
 #pragma pack(pop)
 
 void pmmSet(uint32_t physAddr, bool val) {
-
+    // acquireLock(&pprLock);
     if (val) {
         physicalPageRecord[physAddr >> 15] |= 0b00000001 << ((physAddr & 0b00000000000000000111000000000000) >> 12);
     } else { 
         physicalPageRecord[physAddr >> 15] &= ~(0b00000001 << ((physAddr & 0b00000000000000000111000000000000) >> 12));
     }
+    // releaseLock(&pprLock);
 }
 
 bool pmmGet(uint32_t physAddr) {
+    // acquireLock(&pprLock);
     return (bool)(physicalPageRecord[physAddr >> 15] & (0b00000001 << ((physAddr & 0b00000000000000000111000000000000) >> 12)) >> ((physAddr & 0b00000000000000000111000000000000)>>12));
+    // releaseLock(&pprLock);
 }
 
 // page allocation from far memory. returns physical first 20 bits of address shifted right 12 bites
@@ -56,6 +60,7 @@ uint32_t pmmAllocNextFreePage() {
         // kprint("Found address!!!!!!!!!!!!");
         if (!pmmGet(i)) {
             pmmSet(i, PMM_UNAVAILABLE);
+            // releaseLock(&pprLock);
             return i;
         }
     }

@@ -10,9 +10,13 @@
 #include <kernel/memory/vmm.h>
 #include <kernel.h>
 #include <kernel/memory.h>
+#include <stdio.h>
+#include <kernel/processes/atlock.h>
 
 void* kalloc(uint32_t numBytes);
 void free(void* ptr);
+
+atlock kallocLock = ATLOCK_UNLOCKED;
 
 // #pragma pack(push, 1)
 
@@ -29,6 +33,7 @@ uint32_t nextVAddrToMap = 0xC1000000;
 
 // kernel allocation, for drivers and such
 void* kalloc(uint32_t numBytes) {
+    acquireLock(&kallocLock);
     if (heapStart == NULL) {
         vmmAddPage(nextVAddrToMap, false, VMM_WRITABLE);
         struct KallocHeader* head = (struct KallocHeader*)nextVAddrToMap;
@@ -51,9 +56,10 @@ void* kalloc(uint32_t numBytes) {
                 for (int i = ALIGN_DOWN(nextAddr); i < ALIGN_UP((nextAddr + sizeof(struct KallocHeader) + numBytes)); i+=PAGE_SIZE) {
                     // kprint("Allocating page (k): ");
                     // kprint_hex(i);
-                    kprint("\n");
+                    printf("\n");
                     if (!vmmAddPage(i, false, VMM_WRITABLE)) {
-                        kprint("OUT OF MEMORY \n");
+                        printf("OUT OF MEMORY \n");
+                        releaseLock(&kallocLock);
                         return NULL;
                     }
                 }
@@ -65,6 +71,7 @@ void* kalloc(uint32_t numBytes) {
                 };
                 current->next = nextHeader;
                 nextAddr += sizeof(struct KallocHeader);
+                releaseLock(&kallocLock);
                 return (void*)nextAddr;
             }
         } else {
@@ -72,13 +79,16 @@ void* kalloc(uint32_t numBytes) {
             uint32_t kallocSegmentToReturn = (uint32_t) current;
             current->isFree = false;
             kallocSegmentToReturn += sizeof(struct KallocHeader);
+            releaseLock(&kallocLock);
             return (void*) kallocSegmentToReturn;
         }
         current = current->next;
     }
+    releaseLock(&kallocLock);
 }
 
 void kfree(void* ptr) {
+    acquireLock(&kallocLock);
     if (ptr == NULL) return;
 
     uint32_t addr = (uint32_t) ptr;
@@ -89,4 +99,5 @@ void kfree(void* ptr) {
         kh->size += kh->next->size + sizeof(struct KallocHeader);
         kh->next = kh->next->next;
     }
+    releaseLock(&kallocLock);
 }

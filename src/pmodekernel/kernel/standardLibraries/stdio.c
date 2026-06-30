@@ -1,11 +1,15 @@
 #include <kernel/logging.h>
 #include <stdarg.h>
+#include <kernel/processes/atlock.h>
 
 char* convert(unsigned int, int);  
+atlock printLock = ATLOCK_UNLOCKED;
 
 void puts(char* str) {
+    acquireLock(&printLock);
     kprint(str);
     kprint("\n");
+    releaseLock(&printLock);
 }
 
 // printf function from https://www.firmcodes.com/write-printf-function-c/
@@ -13,6 +17,7 @@ void printf(char* strPtr, uint32_t num, ...) {
     va_list valist;
     va_start(valist, num);
 
+    acquireLock(&printLock);
     while (*strPtr != '\0') {
         if (*strPtr != '%') {
             kputc(*strPtr);
@@ -56,11 +61,11 @@ void printf(char* strPtr, uint32_t num, ...) {
                     break;
                 strPtr++;
             }
-
-            end:
-                break;
         }
     }
+
+    end: 
+    releaseLock(&printLock);
 
     va_end(valist);
 }
