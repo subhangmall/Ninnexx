@@ -58,7 +58,48 @@ gdt_selector_32pm_user_ds:
     db 0xF2 ; access byte                             
     db 11001111b
     db 0
+
+tss_desc:
+    dw tss_end - tss - 1
+    dw 0
+    db 0
+    db 0b10001001
+    db 0
+    db 0
+
 gdt_end:
+
+global tss
+tss:
+    dd 0; LINK
+    dd 0; ESP 0
+    dd 0 ; SS 0
+    dd 0 ; ESP 1
+    dd 0 ; SS 1
+    dd 0 ; ESP2
+    dd 0 ; SS 2
+    dd 0 ; CR3
+    dd 0 ; EIP
+    dd 0 ; EFLAGS
+    dd 0 ; EAX
+    dd 0 ; ECX
+    dd 0 ; EDX
+    dd 0 ; EBX
+    dd 0 ; ESP
+    dd 0 ; EBP
+    dd 0 ; ESI
+    dd 0 ; EDI
+    dd 0 ; ES
+    dd 0 ; CS
+    dd 0 ; SS
+    dd 0 ; DS
+    dd 0 ; FS
+    dd 0 ; GS
+    dd 0 ; LDTR
+    dw 0 ; reserved
+    dw tss_end - tss ; iomap location (will do nothing cause is invalid address)
+    ; dd 0 ; ssp IF ISSUES LATEER, MAYBE UNCOMMENT?
+tss_end: 
 ; In order to load GDT, another structure is
 ; requried: the GDT descriptor.
 ; It contains GDT's size - 1 (2B) and address (4B).
@@ -70,6 +111,23 @@ gdt_descriptor:
 section .text
 global gdtFlush
 gdtFlush:
+    ; setup tss with right values
+    xor eax, eax
+    mov eax, tss
+    mov [tss_desc+2], ax
+    shr eax, 16
+    mov [tss_desc+4], al
+    shr eax, 8
+    mov [tss_desc+7], al
+
+    xor eax, eax
+    mov eax, tss_end
+    sub eax, tss
+    dec eax
+    shr eax, 16
+    and eax, 0x0F
+    mov [tss_desc+6], al
+
     lgdt [gdt_descriptor]
     jmp 0x08:.refresh_segments
 
@@ -80,6 +138,8 @@ gdtFlush:
     mov fs, ax
     mov gs, ax
     mov ss, ax
+    mov ax, 0x28
+    ltr ax ; load tss
     jmp 0x08:.reload_cs
 
 .reload_cs:

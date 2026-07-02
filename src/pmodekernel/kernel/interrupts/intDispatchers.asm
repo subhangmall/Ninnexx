@@ -1852,7 +1852,6 @@ isr_common:
     pop ds
     popa
     add esp, 8
-    ; sti
     iretd
 
 isr_err:
