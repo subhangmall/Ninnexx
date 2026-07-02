@@ -2,6 +2,7 @@
 #include <kernel/logging.h>
 #include <kernel/interrupts/idt.h>
 #include <kernel/interrupts/intrStructs.h>
+#include <kernel/processes/yield.h>
 #include <kernel/time/time.h>
 #include <stdio.h>
 
@@ -23,5 +24,6 @@ void pageFault(struct InterruptStackFrame* stack) {
 void initInterruptHandlers() {
     setIDTHandler(0, (uint32_t) &divByZeroException);
     setIDTHandler(14, (uint32_t) &pageFault);
+    setIDTHandler(0xFF, (uint32_t) &yield);
     initTimeIntrHandler();
 }

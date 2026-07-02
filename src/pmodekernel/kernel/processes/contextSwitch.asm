@@ -5,14 +5,15 @@ extern current
 section .text
 global context_switch_noret
 context_switch_noret:
-    mov eax, current
+    mov eax, [current]
     add eax, 10
-    mov cr3, dword [eax]
+    mov ebx, dword [eax]
+    mov cr3, ebx
     jmp 0x08:.far_jmp_flsh
     .far_jmp_flsh: 
-    add eax, 4
+    mov eax, [current]
+    add eax, 14
     mov esp, dword [eax]; 
-    ; add esp, 4 ; b/c ESP already points to interrupt stack frame, not argumetn
     pop gs
     pop fs
     pop es

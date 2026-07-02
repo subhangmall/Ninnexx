@@ -2,23 +2,23 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <kernel/memory/memSetup.h>
-// #include "./memory/kmemmgt.h"
-// #include "./idt.h"
-#include <kernel/logging.h>
 #include <kernel/interrupts/idt.h>
 #include <kernel/interrupts/pic.h>
 #include <kernel/memory/vmm.h>
-// #include <kernel/memory/kalloc.h>
+#include <kernel/memory/pmm.h>
+#include <kernel/memory/memSetup.h>
 #include <kernel/interrupts/initInterruptHandlers.h>
 #include <kernel/time/time.h>
-#include <kernel/memory/pmm.h>
 #include <kernel/genericDrivers/ps2keyboard.h>
 #include <kernel/genericDrivers/atapio.h>
 #include <kernel/filesystem/fat_filelib.h>
+#include <kernel/processes/process.h>
+#include <kernel/logging.h>
+#include <kernel.h>
 #include <stdlib.h>
 
 extern void gdtFlush();
+extern struct PageDirectoryEntry kernelPageDirectory[4096/sizeof(struct PageDirectoryEntry)];
 
 __attribute__((section(".boot"))) void kentry(uint32_t dummyCS, uint32_t e820LenAddr, uint32_t e820StartAddress);
 void continueInitialization();
@@ -26,6 +26,9 @@ void continueInitialization();
 __attribute__((section(".boot"))) void kentry(uint32_t dummyCS, uint32_t e820LenAddr, uint32_t e820StartAddress) { // dummy CS because CS Is also pushed onto the stack cause it is called from a far jump
     initMemory(&continueInitialization, e820LenAddr, e820StartAddress);
 }
+
+extern struct Process procHead;
+extern struct Process* current;
 
 void continueInitialization() {  
     videoMemory = (volatile char*) vmmAllocatePhysicalRange(0xB8000, 4000);
@@ -64,7 +67,18 @@ void continueInitialization() {
     }
     fl_init();
 
-    
+
+    // THIS FUNCTION WILL EVENTUALLY WILL BECOME PROCHEAD, ESSENTIALLY WHAT IS SCHEDULED WHEN THERE IS NOTHING ELSE TO RUN
+    procHead.procID = 0;
+    procHead.next = &procHead;
+    procHead.kernel = true;
+    procHead.v8086 = false;
+    procHead.cr3 = (uint32_t)&kernelPageDirectory;
+    current = &procHead;
+    asm volatile("int $0xFF");
+    kprint("hi");
+    asm volatile("int $0xFF");
+    kprint("hi again");
 
 
     while (1) {}

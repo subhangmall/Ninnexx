@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 #ifndef INTRSTRUCT_H
 #define INTRSTRUCT_H
 
