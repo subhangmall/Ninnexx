@@ -45,5 +45,8 @@ extern struct Process procHead;
 extern struct Process* current;
 
 uint32_t createNewProcess(bool kernel, bool v8086, uint32_t cr3, uint32_t kernelStackTop, uint32_t startEip, uint32_t usrEspIfNeeded);
+uint32_t allocateKernelStack();
+void deleteProcess(uint32_t pid);
+
 
 #endif

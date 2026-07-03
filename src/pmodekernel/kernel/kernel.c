@@ -23,7 +23,7 @@ extern struct PageDirectoryEntry kernelPageDirectory[4096/sizeof(struct PageDire
 
 __attribute__((section(".boot"))) void kentry(uint32_t dummyCS, uint32_t e820LenAddr, uint32_t e820StartAddress);
 void continueInitialization();
-// void hi();
+void hi();
 
 __attribute__((section(".boot"))) void kentry(uint32_t dummyCS, uint32_t e820LenAddr, uint32_t e820StartAddress) { // dummy CS because CS Is also pushed onto the stack cause it is called from a far jump
     initMemory(&continueInitialization, e820LenAddr, e820StartAddress);
@@ -39,16 +39,6 @@ void continueInitialization() {
     // remap gdt to higher half
     gdtFlush();
 
-    // struct PageDirectoryEntry* lowHalfPDE = (struct PageDirectoryEntry*) 0xFFFFF000;
-    // lowHalfPDE->present=0;
-    // asm volatile (
-    //     "mov %%cr3, %%eax\n\t"
-    //     "mov %%eax, %%cr3"
-    //     :
-    //     :
-    //     : "eax"
-    // );
-
     // kprint("hi");
 
     // setup interrupts/pic
@@ -62,6 +52,16 @@ void continueInitialization() {
     
     // time subsystem to set frequency
     setPitPeriodic(1193); // fire (around) every  10 ms
+
+    struct PageDirectoryEntry* lowHalfPDE = (struct PageDirectoryEntry*) 0xFFFFF000;
+    lowHalfPDE->present=0;
+    asm volatile (
+        "mov %%cr3, %%eax\n\t"
+        "mov %%eax, %%cr3"
+        :
+        :
+        : "eax"
+    );
 
     identify();
     if (fl_attach_media(fatReadWrapper, fatWriteWrapper) != FAT_INIT_OK) {
@@ -78,16 +78,25 @@ void continueInitialization() {
     procHead.cr3 = (uint32_t)&kernelPageDirectory;
     current = &procHead;
 
-    vmmAllocatePage(0xB0000000, pmmAllocNextFreePage(), VMM_WRITABLE);
-    // uint32_t a = createNewProcess(true, false, (uint32_t)&kernelPageDirectory, 0xB0000FFF, (uint32_t)&hi, 0);    
-    // printf("%x", a);
+    sleep(100);
+    printf("hi");
+    sleep(100);
+    printf("hi");
 
-    while (1) {}
+    createNewProcess(true, false, (uint32_t)&kernelPageDirectory, allocateKernelStack(), (uint32_t) &hi, 0);
+
+    sleep(1000);
+    deleteProcess(1);
+
+    while (1) {
+        printf("a");
+        sleep(100);
+    }
 }
 
-// void hi() {
-//     while (true) {
-//         printf("process a\n");
-//         sleep(100);
-//     }
-// }
+void hi() {
+    while (1) {
+        printf("hi\n");
+        sleep(100);
+    } 
+}

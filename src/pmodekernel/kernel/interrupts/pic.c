@@ -120,7 +120,7 @@ uint8_t irqNumToIntNum(uint8_t irqNum) {
 }
 
 void defaultPICHandler(struct InterruptStackFrame* stack) {
-	printf("Uninitialized PIC interrupt %H\n", intNumToIRQNum(stack->intNum));
+	printf("Uninitialized PIC interrupt %X\n", intNumToIRQNum(stack->intNum));
 
 	sendEOIToPIC(intNumToIRQNum(stack->intNum));
     return;

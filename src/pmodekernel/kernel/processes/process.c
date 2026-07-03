@@ -1,40 +1,20 @@
 #include <kernel/processes/process.h>
 #include <kernel/interrupts/intrStructs.h>
+#include <kernel/memory/vmm.h>
+#include <kernel/memory.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <kernel.h>
 
 struct Process* current;
 struct Process procHead;
 
 uint32_t currentProcID = 0;
 
-uint32_t createNewProcess(bool kernel, bool v8086, uint32_t cr3, uint32_t kernelStackTop, uint32_t startEip, uint32_t usrEspIfNeeded) {
-    // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-     // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-      // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-       // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-        // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-         // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-          // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-           // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-            // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-             // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-              // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-               // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-                // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-                 // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-                  // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-                   // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-                    // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-                     // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-                      // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-                       // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-                        // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-                         // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-                          // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
-                           // NOTE: KERNEL-> USER ALSO PUSHES USER ESP/SS!!!!!!!!!
+uint32_t kernelStackAllocationZoneTop = 0xB0000000;
 
+uint32_t createNewProcess(bool kernel, bool v8086, uint32_t cr3, uint32_t kernelStackTop, uint32_t startEip, uint32_t usrEspIfNeeded) {
     struct InterruptStackFrame* isf = (struct InterruptStackFrame*) malloc(sizeof(struct InterruptStackFrameFromUser));
     struct Process* new = (struct Process*) malloc(sizeof(struct Process));
 
@@ -108,6 +88,36 @@ uint32_t createNewProcess(bool kernel, bool v8086, uint32_t cr3, uint32_t kernel
     return new->procID;
 }
 
-void deleteProcess() {
+uint32_t allocateKernelStack() {
+    kernelStackAllocationZoneTop -= 0x3000;
+    if (!vmmAddPage(kernelStackAllocationZoneTop + 0x2000, true, VMM_WRITABLE) || !vmmAddPage(kernelStackAllocationZoneTop + 0x1000, true, VMM_WRITABLE)) {
+        return (uint32_t)NULL;
+    }
+    return kernelStackAllocationZoneTop + 0x2FFF;
+}
 
+void deleteProcess(uint32_t pid) {
+    struct Process* iter;
+    iter = (struct Process*) &procHead;
+    
+    while (iter->procID != pid) {
+        iter = iter->next;
+    }
+
+    uint32_t procAddr = (uint32_t) iter;
+    uint32_t next = (uint32_t) iter->next;
+    
+
+    iter = (struct Process*) &procHead;
+
+    // find one before it
+    while ((uint32_t)iter->next != procAddr) {
+        iter = iter->next;
+    }
+
+    // set it's next to the next of the removed element
+    iter->next = (struct Process*) next;
+
+    while (current->procID == pid) {}
+    free((void*)procAddr);
 }
