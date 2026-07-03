@@ -59,6 +59,7 @@ void* kalloc(uint32_t numBytes) {
                     printf("\n");
                     if (!vmmAddPage(i, false, VMM_WRITABLE)) {
                         printf("OUT OF MEMORY \n");
+                        kprint_hex(i);
                         releaseLock(&kallocLock);
                         return NULL;
                     }

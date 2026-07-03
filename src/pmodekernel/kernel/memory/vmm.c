@@ -90,6 +90,8 @@ bool vmmAllocatePage(uint32_t vAddr, uint32_t physAddr, uint8_t flags) {
             : "r" (vAddr)
             : "memory"
             );
+
+            return true;
             
             // if (shouldZero) {
             //     vAddr &= 0b11111111111111111111000000000000;
@@ -119,11 +121,14 @@ bool vmmAllocatePage(uint32_t vAddr, uint32_t physAddr, uint8_t flags) {
 }
 
 bool vmmAddPage(uint32_t vAddr, bool shouldZero, uint8_t flags) {
-    bool result = vmmAllocatePage(vAddr, pmmAllocNextFreePage(), flags);
+    uint32_t alloc = pmmAllocNextFreePage();
+    bool result = vmmAllocatePage(vAddr, alloc, flags);
     if (shouldZero && result) {
         vmmZeroPage(vAddr);
         return true;
     } else {
+        // kprint("pmm result: ");
+        // kprint_hex(alloc);
         return result;
     }
 }

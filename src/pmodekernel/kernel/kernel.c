@@ -7,6 +7,7 @@
 #include <kernel/memory/vmm.h>
 #include <kernel/memory/pmm.h>
 #include <kernel/memory/memSetup.h>
+#include <kernel/memory.h>
 #include <kernel/interrupts/initInterruptHandlers.h>
 #include <kernel/time/time.h>
 #include <kernel/genericDrivers/ps2keyboard.h>
@@ -22,6 +23,7 @@ extern struct PageDirectoryEntry kernelPageDirectory[4096/sizeof(struct PageDire
 
 __attribute__((section(".boot"))) void kentry(uint32_t dummyCS, uint32_t e820LenAddr, uint32_t e820StartAddress);
 void continueInitialization();
+// void hi();
 
 __attribute__((section(".boot"))) void kentry(uint32_t dummyCS, uint32_t e820LenAddr, uint32_t e820StartAddress) { // dummy CS because CS Is also pushed onto the stack cause it is called from a far jump
     initMemory(&continueInitialization, e820LenAddr, e820StartAddress);
@@ -75,12 +77,17 @@ void continueInitialization() {
     procHead.v8086 = false;
     procHead.cr3 = (uint32_t)&kernelPageDirectory;
     current = &procHead;
-    asm volatile("int $0xFF");
-    kprint("hi");
-    asm volatile("int $0xFF");
-    kprint("hi again");
 
+    vmmAllocatePage(0xB0000000, pmmAllocNextFreePage(), VMM_WRITABLE);
+    // uint32_t a = createNewProcess(true, false, (uint32_t)&kernelPageDirectory, 0xB0000FFF, (uint32_t)&hi, 0);    
+    // printf("%x", a);
 
     while (1) {}
-
 }
+
+// void hi() {
+//     while (true) {
+//         printf("process a\n");
+//         sleep(100);
+//     }
+// }
