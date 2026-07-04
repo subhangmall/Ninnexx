@@ -20,6 +20,7 @@
 
 extern void gdtFlush();
 extern struct PageDirectoryEntry kernelPageDirectory[4096/sizeof(struct PageDirectoryEntry)];
+extern bool shouldTrack;
 
 __attribute__((section(".boot"))) void kentry(uint32_t dummyCS, uint32_t e820LenAddr, uint32_t e820StartAddress);
 void continueInitialization();
@@ -33,6 +34,8 @@ extern struct Process procHead;
 extern struct Process* current;
 
 void continueInitialization() {  
+    vmmAllocatePage(PARENT_KPD_ADDR, (uint32_t) &kernelPageDirectory, VMM_WRITABLE); // master page table now at PARENT_KPD
+    
     videoMemory = (volatile char*) vmmAllocatePhysicalRange(0xB8000, 4000);
     kclear();
 
@@ -77,16 +80,18 @@ void continueInitialization() {
     procHead.v8086 = false;
     procHead.cr3 = (uint32_t)&kernelPageDirectory;
     current = &procHead;
+    shouldTrack = true; // enable setting the page directory entry
 
     sleep(100);
     printf("hi");
     sleep(100);
     printf("hi");
 
+    // *(uint32_t*)(PARENT_KPD_ADDR) = 0x0;
     createNewProcess(true, false, (uint32_t)&kernelPageDirectory, allocateKernelStack(), (uint32_t) &hi, 0);
 
-    sleep(1000);
-    deleteProcess(1);
+    // sleep(1000);
+    // deleteProcess(1);
 
     while (1) {
         printf("a");

@@ -1,6 +1,8 @@
 #include <kernel/processes/process.h>
 #include <kernel/interrupts/intrStructs.h>
+#include <kernel/memory.h>
 #include <stdio.h>
+#include <kernel/memory/pmm.h>
 
 extern struct Process* current;
 extern struct Process procHead;
@@ -12,6 +14,20 @@ void contextSwitch(struct InterruptStackFrame* isf, struct Process* next) {
     current->kesp = (uint32_t) isf;
     current = next;
     tss[1] = current->krnlStackTop; // esp 0
+    asm volatile(
+        "mov %0, %%eax\n\t"
+        "mov %%eax, %%cr3\n\t"
+        "jmp 1f\n\t"
+        "1:"
+        :
+        : "r" (current->cr3)
+        : "eax"
+    );
+
+    // sync with global page directory
+    for (uint32_t i = (0xC0000000 >> 22); i <= (0xFFFFFFFF >> 22); i++) {
+        KERNEL_PAGE_DIRECTORY[i] = PARENT_KPD[i];
+    }
     context_switch_noret();
 }
 

@@ -37,6 +37,7 @@ struct PageTableEntry {
 #pragma pack(pop)
 
 extern uint8_t physicalPageRecord[0xFFFFFFFF/PAGE_SIZE/8];
+extern bool shouldTrack;
 void pmmSet(uint32_t physAddr, bool val);
 bool pmmGet(uint32_t physAddr);
 uint32_t pmmAllocNextFreePage();

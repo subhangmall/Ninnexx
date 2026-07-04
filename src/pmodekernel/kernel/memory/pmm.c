@@ -2,8 +2,10 @@
 #include <kernel.h>
 #include <kernel/memory.h>
 #include <kernel/processes/atlock.h>
+#include <kernel/processes/process.h>
 
 uint8_t physicalPageRecord[0xFFFFFFFF/PAGE_SIZE/8];
+bool shouldTrack = false;
 // static uint32_t mmioNextFree = MMIO_VIRTUAL_SPACE_BASE;
 
 #pragma pack(push, 1)
@@ -100,6 +102,12 @@ uint32_t virtToPhysAddr(uint32_t vAddr) {
 }
 
 bool createNewPageTable(uint32_t vAddr) {
+    bool usr = false;
+
+    if ((vAddr & 0xFFC00000) + (4096 * 1024) < 0xC0000000) {
+        usr = true;
+    }
+
     uint16_t ptdIdx = (uint16_t)((vAddr >> 22)&0b1111111111);
 
     uint32_t pageStart = pmmAllocNextFreePage();
@@ -120,7 +128,15 @@ bool createNewPageTable(uint32_t vAddr) {
         .pageAddress = pageStart >> 12
     };
 
+    if (usr) {
+        new.user = 1;
+    }
+
     KERNEL_PAGE_DIRECTORY[ptdIdx] = new;
+    if (current->procID != 0 && shouldTrack && usr) {
+        // update, essentially, swapper_pg_dir
+        PARENT_KPD[ptdIdx]=new;
+    }
 
     asm volatile (
         "mov %%cr3, %%eax\n"
