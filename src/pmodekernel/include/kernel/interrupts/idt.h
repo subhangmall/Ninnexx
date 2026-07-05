@@ -27,7 +27,7 @@ void setupInterruptStructures();
 void enableInterrupts();
 void disableInterrupts();
 void loadIDTR();
-void setIDTHandler(int isrNum, int handlerAddr);
+void setIDTHandler(int isrNum, int handlerAddr, bool accessibleToUsr);
 extern struct IdtrStruct idtr __attribute__((aligned(16)));
 extern struct InterruptDescriptor idt[256] __attribute__((aligned(16)));
 extern uint32_t dispatcherFunAddrs[256];

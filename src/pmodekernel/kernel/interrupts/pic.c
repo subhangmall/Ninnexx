@@ -38,7 +38,7 @@ bool linkIRQHandler(uint8_t irqNum, uint32_t address) {
 	if (irqNumToIntNum(irqNum) == 0x00) {
 		return false;
 	}
-	setIDTHandler(irqNumToIntNum(irqNum), address);
+	setIDTHandler(irqNumToIntNum(irqNum), address, false);
 }
 
 void initPIC(uint8_t mOffset, uint8_t sOffset) {

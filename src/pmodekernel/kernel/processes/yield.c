@@ -4,9 +4,6 @@
 #include <kernel/processes/contextSwitch.h>
 #include <stdio.h>
 
-extern struct Process* current;
-
 void yield(struct InterruptStackFrame* isf) {
-    // printf("yielding\n");
-    contextSwitch(isf, current->next);
+    contextSwitch(isf);
 }

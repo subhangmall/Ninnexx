@@ -386,6 +386,10 @@ void disableInterrupts() {
     );
 }
 
-void setIDTHandler(int isrNum, int handlerAddr) {
+void setIDTHandler(int isrNum, int handlerAddr, bool accessibleToUsr) {
     interruptRequestHandlers[isrNum] = (void(*)(struct InterruptStackFrame*)) handlerAddr;
+    if (accessibleToUsr)
+        idt[isrNum].dpl = 3; 
+    else
+        idt[isrNum].dpl = 0;
 }

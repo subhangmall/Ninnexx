@@ -73,7 +73,7 @@ global tss
 tss:
     dd 0; LINK
     dd 0; ESP 0
-    dd 0 ; SS 0
+    dd 0x10 ; SS 0
     dd 0 ; ESP 1
     dd 0 ; SS 1
     dd 0 ; ESP2

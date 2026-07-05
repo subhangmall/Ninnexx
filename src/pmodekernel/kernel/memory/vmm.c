@@ -23,6 +23,11 @@ void vmmRemovePage(uint32_t vAddr) {
 bool vmmAllocatePage(uint32_t vAddr, uint32_t physAddr, uint8_t flags) {
     // kprint("Vaddr : ");
     // kprint_hex(vAddr);
+    bool usr = false;
+
+    if (vAddr < 0xC0000000) {
+        usr = true;
+    }
 
     uint16_t ptdIdx = (uint16_t)((vAddr >> 22)&0b1111111111);
 
@@ -51,6 +56,10 @@ bool vmmAllocatePage(uint32_t vAddr, uint32_t physAddr, uint8_t flags) {
                 .pageAddress = (pagePhysicalAddr >> 12)
             };
 
+            if (usr) {
+                pte.user=1;
+            }
+
             if (flags == VMM_PRESENT) {
                 pte.present = 1;
             }
@@ -58,12 +67,6 @@ bool vmmAllocatePage(uint32_t vAddr, uint32_t physAddr, uint8_t flags) {
             if (flags == VMM_WRITABLE) {
                 pte.present = 1;
                 pte.rw = 1;
-            }
-
-            if (flags == VMM_USER) {
-                pte.present = 1;
-                pte.rw = 1;
-                pte.user = 1;
             }
 
             if (flags == VMM_MMIO) {
@@ -155,5 +158,7 @@ void* vmmAllocatePhysicalRange(uint32_t physAddr, uint32_t len) {
 }
 
 void vmmDeallocatePhysicalRange(uint32_t vAddr, uint32_t len) {
-
+    for (int i = ALIGN_DOWN(vAddr); i < ALIGN_UP(vAddr); i+=4096) {
+        premove(i);
+    }
 }

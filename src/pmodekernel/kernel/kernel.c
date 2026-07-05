@@ -21,6 +21,7 @@
 extern void gdtFlush();
 extern struct PageDirectoryEntry kernelPageDirectory[4096/sizeof(struct PageDirectoryEntry)];
 extern bool shouldTrack;
+extern bool procEnabled;
 
 __attribute__((section(".boot"))) void kentry(uint32_t dummyCS, uint32_t e820LenAddr, uint32_t e820StartAddress);
 void continueInitialization();
@@ -79,19 +80,18 @@ void continueInitialization() {
     procHead.kernel = true;
     procHead.v8086 = false;
     procHead.cr3 = (uint32_t)&kernelPageDirectory;
+    procHead.zombie = false;
     current = &procHead;
     shouldTrack = true; // enable setting the page directory entry
+    procEnabled = true;
 
-    sleep(100);
-    printf("hi");
-    sleep(100);
-    printf("hi");
+    // sleep(100);
+    // printf("hi");
+    // sleep(100);
+    // printf("hi");
 
     // *(uint32_t*)(PARENT_KPD_ADDR) = 0x0;
-    createNewProcess(true, false, (uint32_t)&kernelPageDirectory, allocateKernelStack(), (uint32_t) &hi, 0);
-
-    // sleep(1000);
-    // deleteProcess(1);
+    createNewProcess(false, false, (uint32_t)&kernelPageDirectory, allocateKernelStack(), (uint32_t) &hi, 0xBFFFFFFF);
 
     while (1) {
         printf("a");
@@ -100,8 +100,11 @@ void continueInitialization() {
 }
 
 void hi() {
-    while (1) {
+    uint32_t i = 0;
+    while (i < 19) {
         printf("hi\n");
         sleep(100);
-    } 
+        i++;
+    }
+    while (1) {}
 }

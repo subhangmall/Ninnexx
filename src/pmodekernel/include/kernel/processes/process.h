@@ -39,10 +39,12 @@ struct Process {
     uint32_t cr3; // pointer to page table
     uint32_t kesp; // kernel stack 
     uint32_t krnlStackTop;
+    bool zombie;
 } __attribute__((packed));
 
 extern struct Process procHead;
 extern struct Process* current;
+extern bool procEnabled;
 
 uint32_t createNewProcess(bool kernel, bool v8086, uint32_t cr3, uint32_t kernelStackTop, uint32_t startEip, uint32_t usrEspIfNeeded);
 uint32_t allocateKernelStack();

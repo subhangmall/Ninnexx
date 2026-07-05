@@ -9,11 +9,17 @@ extern struct Process procHead;
 extern void context_switch_noret(void);
 extern uint32_t tss[];
 
-void contextSwitch(struct InterruptStackFrame* isf, struct Process* next) {
+void contextSwitch(struct InterruptStackFrame* isf) {
     // printf("yield\n");
     current->kesp = (uint32_t) isf;
-    current = next;
+    struct Process* iter = current;
+    while (iter->next->zombie) { // next process is a zombie
+        iter = iter->next;
+    }
+    current = iter->next;
     tss[1] = current->krnlStackTop; // esp 0
+
+    // if (current->)
     asm volatile(
         "mov %0, %%eax\n\t"
         "mov %%eax, %%cr3\n\t"
@@ -28,6 +34,51 @@ void contextSwitch(struct InterruptStackFrame* isf, struct Process* next) {
     for (uint32_t i = (0xC0000000 >> 22); i <= (0xFFFFFFFF >> 22); i++) {
         KERNEL_PAGE_DIRECTORY[i] = PARENT_KPD[i];
     }
+
+    asm volatile (
+        "mov %%cr3, %%eax\n\t"
+        "mov %%eax, %%cr3"
+        :
+        :
+        : "eax"
+    ); // refresh TLB
+
     context_switch_noret();
 }
+
+void zombieContextSwitch() {
+    struct Process* iter = current;
+    while (iter->next->zombie) { // next process is a zombie
+        iter = iter->next;
+    }
+    current = iter->next;
+    tss[1] = current->krnlStackTop; // esp 0
+
+    // if (current->)
+    asm volatile(
+        "mov %0, %%eax\n\t"
+        "mov %%eax, %%cr3\n\t"
+        "jmp 1f\n\t"
+        "1:"
+        :
+        : "r" (current->cr3)
+        : "eax"
+    );
+
+    // sync with global page directory
+    for (uint32_t i = (0xC0000000 >> 22); i <= (0xFFFFFFFF >> 22); i++) {
+        KERNEL_PAGE_DIRECTORY[i] = PARENT_KPD[i];
+    }
+
+    asm volatile (
+        "mov %%cr3, %%eax\n\t"
+        "mov %%eax, %%cr3"
+        :
+        :
+        : "eax"
+    ); // refresh TLB
+
+    context_switch_noret();
+}
+
 

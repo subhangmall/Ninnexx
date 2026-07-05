@@ -4,6 +4,7 @@
 #ifndef CONTEXTSWITCH_H
 #define CONTEXTSWITCH_H
 
-void contextSwitch(struct InterruptStackFrame* isf, struct Process* next);
+void contextSwitch(struct InterruptStackFrame* isf);
+void zombieContextSwitch();
 
 #endif

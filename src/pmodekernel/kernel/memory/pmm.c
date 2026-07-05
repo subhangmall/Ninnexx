@@ -104,7 +104,7 @@ uint32_t virtToPhysAddr(uint32_t vAddr) {
 bool createNewPageTable(uint32_t vAddr) {
     bool usr = false;
 
-    if ((vAddr & 0xFFC00000) + (4096 * 1024) < 0xC0000000) {
+    if ((vAddr & 0xFFC00000)  < 0xC0000000) {
         usr = true;
     }
 

@@ -33,6 +33,7 @@ uint32_t nextVAddrToMap = 0xC1000000;
 
 // kernel allocation, for drivers and such
 void* kalloc(uint32_t numBytes) {
+    uint32_t flags;
     acquireLock(&kallocLock);
     if (heapStart == NULL) {
         vmmAddPage(nextVAddrToMap, false, VMM_WRITABLE);
@@ -89,6 +90,7 @@ void* kalloc(uint32_t numBytes) {
 }
 
 void kfree(void* ptr) {
+    uint32_t flags;
     acquireLock(&kallocLock);
     if (ptr == NULL) return;
 

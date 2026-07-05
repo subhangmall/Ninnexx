@@ -1,4 +1,6 @@
 #include <kernel/processes/process.h>
+#include <kernel/processes/yield.h>
+#include <kernel/processes/contextSwitch.h>
 #include <kernel/interrupts/intrStructs.h>
 #include <kernel/memory/vmm.h>
 #include <kernel/memory.h>
@@ -7,12 +9,15 @@
 #include <stdio.h>
 #include <kernel.h>
 
+bool procEnabled = false;
+
 struct Process* current;
 struct Process procHead;
 
 uint32_t currentProcID = 0;
 
-uint32_t kernelStackAllocationZoneTop = 0xB0000000;
+uint32_t kernelStackAllocationZoneTop = 0xE0000000;
+uint32_t kernelPageDirectoryStorageBottom = 0xD0000000;
 
 uint32_t createNewProcess(bool kernel, bool v8086, uint32_t cr3, uint32_t kernelStackTop, uint32_t startEip, uint32_t usrEspIfNeeded) {
     struct InterruptStackFrame* isf = (struct InterruptStackFrame*) malloc(sizeof(struct InterruptStackFrameFromUser));
@@ -23,6 +28,7 @@ uint32_t createNewProcess(bool kernel, bool v8086, uint32_t cr3, uint32_t kernel
     new->v8086 = v8086;
     new->next = &procHead;
     new->cr3 = cr3;
+    new->zombie = false;
     if (kernel) {
         new->kesp = kernelStackTop-sizeof(struct InterruptStackFrame);
     } else {
@@ -30,8 +36,6 @@ uint32_t createNewProcess(bool kernel, bool v8086, uint32_t cr3, uint32_t kernel
     }
     
     new->krnlStackTop = kernelStackTop;
-
-    // printf("a");
 
     isf->eflags = 0x00000000;
     isf->eflags |= 1 << 1; // bit 1 always 1
@@ -69,7 +73,7 @@ uint32_t createNewProcess(bool kernel, bool v8086, uint32_t cr3, uint32_t kernel
     if (kernel) {
         memcpy((void*)(kernelStackTop - sizeof(struct InterruptStackFrame)), isf, sizeof(struct InterruptStackFrame));
     } else {
-        struct InterruptStackFrameFromUser* isfu = (struct InterruptStackFrameFromUser*) isf; // STACK CORRUPTION???????????
+        struct InterruptStackFrameFromUser* isfu = (struct InterruptStackFrameFromUser*) isf;
         isfu->usrEsp = usrEspIfNeeded;
         isfu->usrSS = 0x23;
         memcpy((void*)(kernelStackTop - sizeof(struct InterruptStackFrameFromUser)), isfu, sizeof(struct InterruptStackFrameFromUser));
@@ -97,27 +101,32 @@ uint32_t allocateKernelStack() {
 }
 
 void deleteProcess(uint32_t pid) {
-    struct Process* iter;
-    iter = (struct Process*) &procHead;
-    
-    while (iter->procID != pid) {
-        iter = iter->next;
+    uint32_t eflags;
+    asm volatile (
+        "pushf\n\t"
+        "pop %0\n\t"
+        "cli"
+        : "=r" (eflags)
+        :
+        : "memory"
+    );
+    if (pid==0) return; // cannot end swapper process
+    if (current->procID != pid) {
+        struct Process* iter = (struct Process*) &procHead;
+        while (iter->next->procID != pid) {
+            iter = iter->next;
+        }
+        struct Process* structToFree = iter->next;
+        iter->next = iter->next->next;
+        free(structToFree);
+    } else {
+        current->zombie = true;
+        if (eflags & (1 << 9)) asm volatile ("sti");
+        zombieContextSwitch();
     }
+    if (eflags & (1 << 9)) asm volatile ("sti");
+}
 
-    uint32_t procAddr = (uint32_t) iter;
-    uint32_t next = (uint32_t) iter->next;
-    
+uint32_t createNewPageDirectoryTable() {
 
-    iter = (struct Process*) &procHead;
-
-    // find one before it
-    while ((uint32_t)iter->next != procAddr) {
-        iter = iter->next;
-    }
-
-    // set it's next to the next of the removed element
-    iter->next = (struct Process*) next;
-
-    while (current->procID == pid) {}
-    free((void*)procAddr);
 }

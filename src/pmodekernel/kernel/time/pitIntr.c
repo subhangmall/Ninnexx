@@ -2,6 +2,7 @@
 #include <kernel/interrupts/intrStructs.h>
 #include <kernel/time/time.h>
 #include <kernel/interrupts/pic.h>
+#include <kernel/processes/process.h>
 #include <kernel/processes/yield.h>
 extern volatile uint32_t ticks;
 
@@ -11,7 +12,7 @@ extern volatile uint32_t ticks;
 void pitIntr(struct InterruptStackFrame* stack) {
     ticks++;
     sendEOIToPIC(0);
-    if (ticks % 100 == 0) {
+    if (ticks % 100 == 0 && procEnabled) {
         yield(stack);
     }
 

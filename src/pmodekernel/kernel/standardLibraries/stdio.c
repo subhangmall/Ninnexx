@@ -3,20 +3,22 @@
 #include <kernel/processes/atlock.h>
 
 char* convert(unsigned int, int);  
-atlock printLock = ATLOCK_UNLOCKED;
+// atlock printLock = ATLOCK_UNLOCKED;
 
 void puts(char* str) {
-    acquireLock(&printLock);
+    uint32_t flags;
+    // acquireLockIRQ(&printLock, (uint32_t*)flags);
     kprint(str);
     kprint("\n");
-    releaseLock(&printLock);
+    // releaseLockIRQ(&printLock, (uint32_t*)flags);
 }
 
 void printf(char* strPtr, ...) {
+    // uint32_t flags;
     va_list valist;
     va_start(valist, strPtr);
 
-    acquireLock(&printLock);
+    // acquireLockIRQ(&printLock, (uint32_t*)flags);
     while (*strPtr != '\0') {
         if (*strPtr != '%') {
             kputc(*strPtr);
@@ -68,7 +70,7 @@ void printf(char* strPtr, ...) {
     }
 
     end: 
-    releaseLock(&printLock);
+    // releaseLockIRQ(&printLock, (uint32_t*)flags);
 
     va_end(valist);
 }
