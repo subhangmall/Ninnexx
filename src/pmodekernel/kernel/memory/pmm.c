@@ -3,6 +3,7 @@
 #include <kernel/memory.h>
 #include <kernel/processes/atlock.h>
 #include <kernel/processes/process.h>
+#include <stdio.h>
 
 uint8_t physicalPageRecord[0xFFFFFFFF/PAGE_SIZE/8];
 bool shouldTrack = false;
@@ -89,16 +90,18 @@ void premove(uint32_t vAddr) {
 
 // FIX FUNCTION
 uint32_t virtToPhysAddr(uint32_t vAddr) {
-    uint32_t *PTE = (uint32_t*)((RECURSIVE_PT_ADDR) + 
-        ((0xFFFFF000 & vAddr) >> 10));
-    struct PageTableEntry *pte = (struct PageTableEntry*) PTE;
-    // << 12
-    // kprint_hex((((1) << 12) + (0x00000FFF & vAddr)));
-    // kprint_hex(pte->pageAddress);
-
-    // return (((pte->pageAddress) << 12) + (0x00000FFF & vAddr));
-
-    return 0xFFFFFFFF;
+    struct PageDirectoryEntry* pde = (struct PageDirectoryEntry*)(0xFFFFF000 + ((vAddr & 0b11111111110000000000000000000000) >> 20));
+    if (pde->present == 0) {
+        // printf("addr not found1");
+        return 0xFFFFFFFF; 
+    }
+    struct PageTableEntry* pte = (struct PageTableEntry*)(0xFFC00000 + ((vAddr & 0b111111111111111111111000000000000) >> 10));
+    if (pte->present == 0) {
+        // printf("addr not found2");
+        return 0xFFFFFFFF; 
+    }
+    // printf("addr:%X\n", (vAddr & 0xFFF) + (pte->pageAddress << 12));
+    return (vAddr & 0xFFF) + (pte->pageAddress << 12);
 }
 
 bool createNewPageTable(uint32_t vAddr) {

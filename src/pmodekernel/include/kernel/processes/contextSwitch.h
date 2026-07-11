@@ -6,5 +6,6 @@
 
 void contextSwitch(struct InterruptStackFrame* isf);
 void zombieContextSwitch();
+void switchMemoryContext(uint32_t addr);
 
 #endif

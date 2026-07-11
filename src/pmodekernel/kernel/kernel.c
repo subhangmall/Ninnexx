@@ -84,27 +84,25 @@ void continueInitialization() {
     current = &procHead;
     shouldTrack = true; // enable setting the page directory entry
     procEnabled = true;
-
-    // sleep(100);
-    // printf("hi");
-    // sleep(100);
-    // printf("hi");
-
-    // *(uint32_t*)(PARENT_KPD_ADDR) = 0x0;
-    createNewProcess(false, false, (uint32_t)&kernelPageDirectory, allocateKernelStack(), (uint32_t) &hi, 0xBFFFFFFF);
+    vmmAllocatePage(PARENT_KPD_ADDR, (uint32_t)&kernelPageDirectory, VMM_WRITABLE);
+    printf("phys: %X, virt to phys: %X", (uint32_t)&kernelPageDirectory, virtToPhysAddr(PARENT_KPD_ADDR));
+    createNewProcess(true, false, createProcStackDirectoryStructure(), (uint32_t)&hi, 0);
+    // kprint
+    printf("asdfadsfasdf");
+    // printf("hiiiiiiiii");
+    // uint32_t* a = (uint32_t*)malloc(100);
+    // printf("%X", *a);
 
     while (1) {
         printf("a");
-        sleep(100);
+        sleep(1000);
     }
 }
 
 void hi() {
-    uint32_t i = 0;
-    while (i < 19) {
-        printf("hi\n");
-        sleep(100);
-        i++;
-    }
+    // printf("hiiiiiiiii");
+    // uint32_t* a = (uint32_t*)malloc(100);
+    // printf("%X", *a);
+
     while (1) {}
 }

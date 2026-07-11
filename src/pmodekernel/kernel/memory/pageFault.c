@@ -47,6 +47,6 @@ void pageFault(struct InterruptStackFrame* isf) {
     }
 
     // if (!userProgram && !pageAccessedPresent && )
-    printf("Page Fault!\n");
+    printf("Page Fault while accessing %X!\n", addressTriedToAccess);
     asm volatile ("hlt");
 }

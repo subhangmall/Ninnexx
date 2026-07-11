@@ -1,20 +1,23 @@
 // partially inspired by baponkar.githubio
-
 #include <stdint.h>
-
 #include <kernel/interrupts/pic.h>
 #include <kernel/io/iolibrary.h>
 #include <kernel/logging.h>
+#include <kernel/processes/process.h>
+#include <kernel/processes/contextSwitch.h>
+#include <stdio.h>
 
+extern struct Process* current;
+extern struct Process procHead;
 
-uint8_t bufferPosition = 0;
+bool gettingInput = false;
+uint32_t bufferAddr = 0;
+uint32_t pidOccupying = 0;
 
 struct KeyEvent {
     uint8_t code;
     uint8_t modifiers;
-};
-
-struct KeyEvent keyBuffer[256];
+} __attribute__((packed));
 
 #define ERROR_1 0x00
 #define ERROR_2 0xFF
@@ -368,10 +371,16 @@ void keyboardIRQHandler(struct InterruptStackFrame* stack) {
 
     character:
         ev.modifiers = currentModifiers;
-        if (bufferPosition++ ==  255)
-            bufferPosition = 0;
-        keyBuffer[bufferPosition] = ev;
-        kputc(getCharFromEvent(keyBuffer[bufferPosition]));
+        if (gettingInput) {
+            printf("getting input");
+            struct Process* iter = (struct Process*) &procHead;
+            while (iter->procID != pidOccupying) iter = iter->next;
+            if (iter->cr3 != current->cr3) switchMemoryContext(iter->cr3);
+            *(struct KeyEvent*)(bufferAddr) = ev;
+            if (iter->cr3 != current->cr3) switchMemoryContext(current->cr3);
+            gettingInput = false;
+            printf("returing");
+        }
         goto end;
 
     end:

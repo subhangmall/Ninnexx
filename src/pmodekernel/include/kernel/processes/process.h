@@ -46,8 +46,8 @@ extern struct Process procHead;
 extern struct Process* current;
 extern bool procEnabled;
 
-uint32_t createNewProcess(bool kernel, bool v8086, uint32_t cr3, uint32_t kernelStackTop, uint32_t startEip, uint32_t usrEspIfNeeded);
-uint32_t allocateKernelStack();
+uint32_t createNewProcess(bool kernel, bool v8086, uint32_t procStackDirStruct, uint32_t startEip, uint32_t usrEspIfNeeded);
+uint32_t createProcStackDirectoryStructure();
 void deleteProcess(uint32_t pid);
 
 
