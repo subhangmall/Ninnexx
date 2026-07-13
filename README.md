@@ -2,9 +2,9 @@
 
 Hobbyist 32 bit kernel that bootstraps off of DOS and aims to be able to virtualize DOS in the operating system using v8086.
 
-Completed: DOS bootstrap, E820, paging, GDT, IDT, malloc, sleep subsystem, FAT, PS2 keyboard, PMM/VMM, logging, processes
+Completed: DOS bootstrap, E820, paging, GDT, IDT, malloc, sleep subsystem, FAT, PS2 keyboard, PMM/VMM, logging, processes, reimplementing essential C standard library, per process vRAM buffer
 
-In Progress: higher half remapping, reimplementing essential C standard library functions, implementing concurrency
+In Progress: syscalls, concurrency
 
 Future: v8086, returning to DOS
 

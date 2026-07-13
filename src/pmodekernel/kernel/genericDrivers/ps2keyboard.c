@@ -427,6 +427,17 @@ void initKeyboard() {
     // kprint("hidwe");
     // sendEOIToPIC(0x01);
 
+    while (inb(STATUS_REG) & 1) {
+        inb(DATA_REG);
+    }
+
+    while (inb(STATUS_REG) & 0x02);
+    outb(DATA_REG, 0xF4);
+
+    while (inb(STATUS_REG) & 1) {
+        inb(DATA_REG);
+    }
+
     currentState = NORMAL_STATE;
     currentModifiers = 0;
     linkIRQHandler(0x01, (uint32_t) &keyboardIRQHandler);

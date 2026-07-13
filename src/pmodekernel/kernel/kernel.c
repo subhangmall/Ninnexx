@@ -17,6 +17,7 @@
 #include <kernel/logging.h>
 #include <kernel.h>
 #include <stdlib.h>
+#include <kernel/cmd.h>
 
 extern void gdtFlush();
 extern struct PageDirectoryEntry kernelPageDirectory[4096/sizeof(struct PageDirectoryEntry)];
@@ -26,7 +27,6 @@ extern int cursor;
 
 __attribute__((section(".boot"))) void kentry(uint32_t dummyCS, uint32_t e820LenAddr, uint32_t e820StartAddress);
 void continueInitialization();
-void hi();
 
 __attribute__((section(".boot"))) void kentry(uint32_t dummyCS, uint32_t e820LenAddr, uint32_t e820StartAddress) { // dummy CS because CS Is also pushed onto the stack cause it is called from a far jump
     initMemory(&continueInitialization, e820LenAddr, e820StartAddress);
@@ -92,25 +92,11 @@ void continueInitialization() {
         *(uint16_t*)(0xDFFFF000 + 2*i) = videoMemory[i];
     }
     vmmAllocatePage(PARENT_KPD_ADDR, (uint32_t)&kernelPageDirectory, VMM_WRITABLE);
-    createNewProcess(true, false, createProcStackDirectoryStructure(), (uint32_t)&hi, 0);
+    createNewProcess(true, false, createProcStackDirectoryStructure(), (uint32_t)&cmd, 0);
+    switchForegroundProcess();
     kclear();
-    // kprint
-    printf("asdfadsfasdf");
-    // printf("hiiiiiiiii");
-    // uint32_t* a = (uint32_t*)malloc(100);
-    // printf("%X", *a);
-    printf("num: %X", 0xDFFFF000 >> 22);
 
-    while (1) {
-        printf("a");
-        sleep(100);
-    }
-}
+    printf("Swapper process!\n");
 
-void hi() {
-    printf("ni hao");
-    while (1) {
-        printf("b");
-        sleep(100);
-    }
+    while (1) {}
 }
