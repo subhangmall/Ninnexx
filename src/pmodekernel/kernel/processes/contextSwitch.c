@@ -10,12 +10,8 @@ extern void context_switch_noret(void);
 extern uint32_t tss[];
 
 
-void zombieContextSwitch() {
-    struct Process* iter = current;
-    while (iter->next->zombie) { // next process is a zombie
-        iter = iter->next;
-    }
-    current = iter->next;
+void zombieContextSwitchTo(struct Process* next) {
+    current = next;
 
     if (!current->kernel) {
         tss[1] = current->krnlStackTop; // esp 0
@@ -47,10 +43,23 @@ void zombieContextSwitch() {
     context_switch_noret();
 }
 
+void zombieContextSwitch() {
+    struct Process* iter = current;
+    while (iter->next->zombie || iter->next->status != 0) { // next process is a zombie
+        iter = iter->next;
+    }
+    zombieContextSwitchTo(iter->next);
+}
+
 void contextSwitch(struct InterruptStackFrame* isf) {
     // printf("yield\n");
     current->kesp = (uint32_t) isf;
     zombieContextSwitch();
+}
+
+void contextSwitchTo(struct InterruptStackFrame* isf, struct Process* next) {
+    current->kesp = (uint32_t) isf;
+    zombieContextSwitchTo(next);
 }
 
 void switchMemoryContext(uint32_t addr) {

@@ -5,6 +5,9 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
+// status: 0: normal
+// status: 1: KEYBOARD_WAIT
+
 struct Process {
     uint32_t procID;
 
@@ -40,6 +43,7 @@ struct Process {
     uint32_t kesp; // kernel stack 
     uint32_t krnlStackTop;
     bool zombie;
+    uint32_t status;
 } __attribute__((packed));
 
 extern struct Process procHead;

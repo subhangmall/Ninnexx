@@ -101,6 +101,7 @@ uint32_t createNewProcess(bool kernel, bool v8086, uint32_t procStackDirStruct, 
     new->kernel = kernel;
     new->v8086 = v8086;
     new->next = &procHead;
+    new->status = 0;
     new->cr3 = virtToPhysAddr(procStackDirStruct);
     uint32_t kernelStackTop = procStackDirStruct + 0x3FFF;
 
@@ -178,10 +179,9 @@ uint32_t createProcStackDirectoryStructure() {
         :
         : "memory"
     );
-    kernelStackAllocationZone -= 0x4000;
-    if (!vmmAddPage(kernelStackAllocationZone + 0x3000, false, VMM_WRITABLE) || !vmmAddPage(kernelStackAllocationZone + 0x2000, false, VMM_WRITABLE) || !vmmAddPage(kernelStackAllocationZone, false, VMM_WRITABLE)) {
+    kernelStackAllocationZone -= 0x5000;
+    if (!vmmAddPage(kernelStackAllocationZone + 0x3000, false, VMM_WRITABLE) || !vmmAddPage(kernelStackAllocationZone + 0x2000, false, VMM_WRITABLE) || !vmmAddPage(kernelStackAllocationZone, true, VMM_WRITABLE) || !vmmAddPage(kernelStackAllocationZone + 0x4000, true, VMM_WRITABLE)) {
         if (eflags & (1 << 9)) asm volatile ("sti");
-        // printf("err");
         return (uint32_t)NULL;
     }
 

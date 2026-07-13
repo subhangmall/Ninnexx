@@ -24,6 +24,7 @@ extern struct Process* current;
 error codes: 
 1 -> privelege level error
 2 -> resource temporarily occupied
+3 -> process not available
 */
 
 void sysIntr(struct InterruptStackFrame* isf) {
@@ -41,32 +42,17 @@ void sysIntr(struct InterruptStackFrame* isf) {
             kputc((char)isf->ebx);
             break;
         case 0x02: // read char
-            // if (isf->ebx >= 0xC0000000) { // buffer address
-            //     isf->eflags |= 1; // cf enabled; error
-            //     isf->eax = 0x00000001; // privelege access error
-            //     return;
-            // }
-            if (gettingInput) {
-                isf->eflags |= 1; // cf enabled; error
-                isf->eax = 0x00000002; // resource error
-                // printf("sorry bozo");
-                return;
-            }
-            gettingInput = true;
-            bufferAddr = isf->ebx;
-            pidOccupying = current->procID;
-
-            // enable interrupts and only unmask the keyboard interrupts
-            outb(PIC1_DATA, 0b11111101);
-            outb(PIC2_DATA, 0b11111111);
-            asm volatile("sti");
-
-            while (gettingInput) {} // wait for buffer to fill
-            printf("waiting");
-
-            asm volatile("cli");
-            enablePIC();
-
+            current->status = 1;
+            asm volatile (
+                "mov $0, %%eax\n\t"
+                "int $0xFF"
+                :
+                : 
+                : "eax", "memory"
+            );
+            current->status = 0;
+            isf->eax = getCharFromEvent(buffer[curIdx]);
+            // printf("eax: %X, curIDX: %X", isf->eax, curIdx);
             break;
         
     }

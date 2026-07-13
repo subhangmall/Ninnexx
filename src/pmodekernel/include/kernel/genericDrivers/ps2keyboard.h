@@ -3,9 +3,14 @@
 
 #include <stdint.h>
 
-extern uint32_t bufferAddr;
-extern bool gettingInput;
-extern uint32_t pidOccupying;
+struct KeyEvent {
+    uint8_t code;
+    uint8_t modifiers;
+} __attribute__((packed));
+
+extern struct KeyEvent buffer[256];
+extern uint16_t curIdx;
+char getCharFromEvent(struct KeyEvent ev);
 
 void initKeyboard();
 

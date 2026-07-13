@@ -6,18 +6,10 @@
 #include <kernel/processes/process.h>
 #include <kernel/processes/contextSwitch.h>
 #include <stdio.h>
+#include <kernel/genericDrivers/ps2keyboard.h>
 
 extern struct Process* current;
 extern struct Process procHead;
-
-bool gettingInput = false;
-uint32_t bufferAddr = 0;
-uint32_t pidOccupying = 0;
-
-struct KeyEvent {
-    uint8_t code;
-    uint8_t modifiers;
-} __attribute__((packed));
 
 #define ERROR_1 0x00
 #define ERROR_2 0xFF
@@ -44,6 +36,9 @@ struct KeyEvent {
 uint8_t currentModifiers;
 uint8_t currentState;
 
+struct KeyEvent buffer[256];
+uint16_t curIdx = 0;
+
 typedef enum Keys {
     A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z, 
     one, two, three, four, five, six, seven, eight, nine, zero,
@@ -52,12 +47,12 @@ typedef enum Keys {
 
 static char VisibleKeysAscii[] = {
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ' '
+    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ' ', '\n'
 };
 
 static char VisibleKeysAsciiShift[] = {
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-    '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', ' '
+    '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', ' ', '\n'
 };
 
 char getCharFromEvent(struct KeyEvent ev) {
@@ -367,20 +362,36 @@ void keyboardIRQHandler(struct InterruptStackFrame* stack) {
         goto character;
     }
 
+    if (scancode == 0x1C) {
+        ev.code = enter;
+        goto character;
+    }
+
     goto end; // if character fits none of these descriptions
 
     character:
         ev.modifiers = currentModifiers;
-        if (gettingInput) {
-            printf("getting input");
-            struct Process* iter = (struct Process*) &procHead;
-            while (iter->procID != pidOccupying) iter = iter->next;
-            if (iter->cr3 != current->cr3) switchMemoryContext(iter->cr3);
-            *(struct KeyEvent*)(bufferAddr) = ev;
-            if (iter->cr3 != current->cr3) switchMemoryContext(current->cr3);
-            gettingInput = false;
-            printf("returing");
+        buffer[curIdx] = ev;
+        struct Process* iter = (struct Process*) &procHead;
+        printf("one\n");
+        while (iter->status != 1) {
+            if ((uint32_t) iter->next == (uint32_t) &procHead) goto end; // no processes waiting
+            iter = iter->next;
         }
+
+        // wake waiting process
+        asm volatile(
+            "mov $1, %%eax\n\t"
+            "mov %0, %%ebx\n\t"
+            "int $0xFF"
+            :
+            : "r" (iter->procID)
+            : "eax", "ebx", "memory"
+        );
+
+        curIdx++;
+        if (curIdx == 256) curIdx = 0;
+
         goto end;
 
     end:

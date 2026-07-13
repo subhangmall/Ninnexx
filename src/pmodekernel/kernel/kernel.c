@@ -92,17 +92,31 @@ void continueInitialization() {
     // printf("hiiiiiiiii");
     // uint32_t* a = (uint32_t*)malloc(100);
     // printf("%X", *a);
+    printf("num: %X", 0xDFFFF000 >> 22);
 
     while (1) {
-        printf("a");
+        // printf("a");
         sleep(1000);
     }
 }
 
 void hi() {
-    // printf("hiiiiiiiii");
+    printf("hiiiiiiiii");
     // uint32_t* a = (uint32_t*)malloc(100);
     // printf("%X", *a);
+    // uint8_t* a = (uint8_t*)calloc(1, sizeof(uint8_t));
+    // uint8_t* a = (uint8_t*) calloc(1, 1);
+    // while (true) {
+    //     asm volatile(
+    //         "mov $0x02, %%eax\n\t"
+    //         "int $0x80\n\t"
+    //         "movb %%al, %0"
+    //         : "=m" (*a)
+    //         : 
+    //         : "eax", "memory"
+    //     );
+    //     printf("done: character: %c", *a);
+    // }
 
     while (1) {}
 }
