@@ -44,11 +44,14 @@ struct Process {
     uint32_t krnlStackTop;
     bool zombie;
     uint32_t status;
+    volatile uint16_t* buffer;
+    int cursor;
 } __attribute__((packed));
 
 extern struct Process procHead;
 extern struct Process* current;
 extern bool procEnabled;
+extern uint32_t procIDShowing;
 
 uint32_t createNewProcess(bool kernel, bool v8086, uint32_t procStackDirStruct, uint32_t startEip, uint32_t usrEspIfNeeded);
 uint32_t createProcStackDirectoryStructure();

@@ -46,13 +46,6 @@ __attribute__((aligned(PAGE_SIZE)))
 __attribute__((section(".boot.data")))
 struct PageTableEntry firstKernelPageTable[PAGE_SIZE/sizeof(struct PageTableEntry)];
 
-__attribute__((aligned(PAGE_SIZE)))
-__attribute__((section(".boot.data")))
-uint8_t procHeadStackTop[PAGE_SIZE];
-
-__attribute__((aligned(PAGE_SIZE)))
-__attribute__((section(".boot.data")))
-struct PageTableEntry stackPageTable[PAGE_SIZE/sizeof(struct PageTableEntry)];
 
 __attribute__((section(".boot"))) void initMemory(void (*functionToJumpToAfterCompletion)(), uint32_t e820LenAddr, uint32_t e820StartAddress) {
     struct PageDirectoryEntry pde = {

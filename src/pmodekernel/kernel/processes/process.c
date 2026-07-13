@@ -16,8 +16,9 @@ struct Process* current;
 struct Process procHead;
 
 uint32_t currentProcID = 0;
+uint32_t procIDShowing = 0;
 
-uint32_t kernelStackAllocationZone = 0xE0000000;
+uint32_t kernelStackAllocationZone = 0xDFFFF000;
 // uint32_t kernelPageDirectoryStorageBottom = 0xD0000000;
 
 // uint32_t createNewProcess(bool kernel, bool v8086, uint32_t cr3, uint32_t kernelStackTop, uint32_t startEip, uint32_t usrEspIfNeeded) {
@@ -103,6 +104,8 @@ uint32_t createNewProcess(bool kernel, bool v8086, uint32_t procStackDirStruct, 
     new->next = &procHead;
     new->status = 0;
     new->cr3 = virtToPhysAddr(procStackDirStruct);
+    new->cursor = 0;
+    new->buffer = (uint16_t*) (procStackDirStruct + 0x4000);
     uint32_t kernelStackTop = procStackDirStruct + 0x3FFF;
 
     new->zombie = false;
@@ -223,8 +226,4 @@ void deleteProcess(uint32_t pid) {
         zombieContextSwitch();
     }
     if (eflags & (1 << 9)) asm volatile ("sti");
-}
-
-uint32_t createNewPageDirectoryTable() {
-    
 }

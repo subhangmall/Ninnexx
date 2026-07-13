@@ -22,6 +22,7 @@ extern void gdtFlush();
 extern struct PageDirectoryEntry kernelPageDirectory[4096/sizeof(struct PageDirectoryEntry)];
 extern bool shouldTrack;
 extern bool procEnabled;
+extern int cursor;
 
 __attribute__((section(".boot"))) void kentry(uint32_t dummyCS, uint32_t e820LenAddr, uint32_t e820StartAddress);
 void continueInitialization();
@@ -81,12 +82,18 @@ void continueInitialization() {
     procHead.v8086 = false;
     procHead.cr3 = (uint32_t)&kernelPageDirectory;
     procHead.zombie = false;
-    current = &procHead;
+    procHead.cursor = cursor;
+    procHead.buffer = (uint16_t*) 0xDFFFF000;
     shouldTrack = true; // enable setting the page directory entry
     procEnabled = true;
+    current = &procHead;
+    vmmAddPage(0xDFFFF000, false, VMM_WRITABLE); // vrams
+    for (int i = 0; i < 2048; i++) {
+        *(uint16_t*)(0xDFFFF000 + 2*i) = videoMemory[i];
+    }
     vmmAllocatePage(PARENT_KPD_ADDR, (uint32_t)&kernelPageDirectory, VMM_WRITABLE);
-    printf("phys: %X, virt to phys: %X", (uint32_t)&kernelPageDirectory, virtToPhysAddr(PARENT_KPD_ADDR));
     createNewProcess(true, false, createProcStackDirectoryStructure(), (uint32_t)&hi, 0);
+    kclear();
     // kprint
     printf("asdfadsfasdf");
     // printf("hiiiiiiiii");
@@ -95,28 +102,15 @@ void continueInitialization() {
     printf("num: %X", 0xDFFFF000 >> 22);
 
     while (1) {
-        // printf("a");
-        sleep(1000);
+        printf("a");
+        sleep(100);
     }
 }
 
 void hi() {
-    printf("hiiiiiiiii");
-    // uint32_t* a = (uint32_t*)malloc(100);
-    // printf("%X", *a);
-    // uint8_t* a = (uint8_t*)calloc(1, sizeof(uint8_t));
-    // uint8_t* a = (uint8_t*) calloc(1, 1);
-    // while (true) {
-    //     asm volatile(
-    //         "mov $0x02, %%eax\n\t"
-    //         "int $0x80\n\t"
-    //         "movb %%al, %0"
-    //         : "=m" (*a)
-    //         : 
-    //         : "eax", "memory"
-    //     );
-    //     printf("done: character: %c", *a);
-    // }
-
-    while (1) {}
+    printf("ni hao");
+    while (1) {
+        printf("b");
+        sleep(100);
+    }
 }

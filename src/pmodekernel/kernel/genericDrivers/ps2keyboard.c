@@ -39,6 +39,8 @@ uint8_t currentState;
 struct KeyEvent buffer[256];
 uint16_t curIdx = 0;
 
+extern uint32_t procIDShowing;
+
 typedef enum Keys {
     A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z, 
     one, two, three, four, five, six, seven, eight, nine, zero,
@@ -179,6 +181,12 @@ void keyboardIRQHandler(struct InterruptStackFrame* stack) {
 
     if (scancode == 0x1E) {
         ev.code = A;
+
+        if ((ev.modifiers & L_ALT_MASK) && (ev.modifiers & L_CTRL_MASK)) {
+            switchForegroundProcess();
+            goto end;
+        }
+
         goto character;
     }
 
@@ -370,14 +378,19 @@ void keyboardIRQHandler(struct InterruptStackFrame* stack) {
     goto end; // if character fits none of these descriptions
 
     character:
-        ev.modifiers = currentModifiers;
-        buffer[curIdx] = ev;
         struct Process* iter = (struct Process*) &procHead;
-        printf("one\n");
-        while (iter->status != 1) {
-            if ((uint32_t) iter->next == (uint32_t) &procHead) goto end; // no processes waiting
+        while (iter->procID != procIDShowing) {
+            if (iter->next->procID == 0) goto end; // process doesnt exist, as it loops back to procHead
             iter = iter->next;
         }
+        // now that iter is equal to requesting keyboard input
+        if (iter->status != 1) {
+            goto end; // ignore cause it isn't requesting input
+        }
+        
+
+        ev.modifiers = currentModifiers;
+        buffer[curIdx] = ev;
 
         // wake waiting process
         asm volatile(
@@ -385,7 +398,7 @@ void keyboardIRQHandler(struct InterruptStackFrame* stack) {
             "mov %0, %%ebx\n\t"
             "int $0xFF"
             :
-            : "r" (iter->procID)
+            : "r" (procIDShowing)
             : "eax", "ebx", "memory"
         );
 

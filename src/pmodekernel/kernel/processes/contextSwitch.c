@@ -3,17 +3,19 @@
 #include <kernel/memory.h>
 #include <stdio.h>
 #include <kernel/memory/pmm.h>
+#include <kernel/logging.h>
 
 extern struct Process* current;
 extern struct Process procHead;
 extern void context_switch_noret(void);
 extern uint32_t tss[];
+extern int cursor;
 
 
 void zombieContextSwitchTo(struct Process* next) {
-    current = next;
+    cursor = next->cursor;
 
-    if (!current->kernel) {
+    if (!next->kernel) {
         tss[1] = current->krnlStackTop; // esp 0
         asm volatile(
             "mov %0, %%eax\n\t"
@@ -21,7 +23,7 @@ void zombieContextSwitchTo(struct Process* next) {
             "jmp 1f\n\t"
             "1:"
             :
-            : "r" (current->cr3)
+            : "r" (next->cr3)
             : "eax"
         );
     }
@@ -39,7 +41,7 @@ void zombieContextSwitchTo(struct Process* next) {
         :
         : "eax"
     ); // refresh TLB
-
+    current = next;
     context_switch_noret();
 }
 
@@ -54,11 +56,13 @@ void zombieContextSwitch() {
 void contextSwitch(struct InterruptStackFrame* isf) {
     // printf("yield\n");
     current->kesp = (uint32_t) isf;
+    current->cursor = cursor;
     zombieContextSwitch();
 }
 
 void contextSwitchTo(struct InterruptStackFrame* isf, struct Process* next) {
     current->kesp = (uint32_t) isf;
+    current->cursor = cursor;
     zombieContextSwitchTo(next);
 }
 
