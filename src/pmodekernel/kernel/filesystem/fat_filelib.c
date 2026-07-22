@@ -1023,11 +1023,11 @@ int fl_fread(void * buffer, int size, int length, void *f )
     CHECK_FL_INIT();
 
     if (buffer==NULL || file==NULL)
-        return -1;
+        return -1; // -1
 
     // No read permissions
     if (!(file->flags & FILE_READ))
-        return -1;
+        return -1; // -1
 
     // Nothing to be done
     if (!count)
@@ -1035,7 +1035,7 @@ int fl_fread(void * buffer, int size, int length, void *f )
 
     // Check if read starts past end of file
     if (file->bytenum >= file->filelength)
-        return -1;
+        return -1; // -1
 
     // Limit to file size
     if ( (file->bytenum + count) > file->filelength )

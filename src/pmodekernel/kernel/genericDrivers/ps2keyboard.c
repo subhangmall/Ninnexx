@@ -44,17 +44,17 @@ extern uint32_t procIDShowing;
 typedef enum Keys {
     A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z, 
     one, two, three, four, five, six, seven, eight, nine, zero,
-    space, enter
+    space, enter, semicolon, backslash
 };
 
 static char VisibleKeysAscii[] = {
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ' ', '\n'
+    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ' ', '\n', ';', '\\'
 };
 
 static char VisibleKeysAsciiShift[] = {
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-    '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', ' ', '\n'
+    '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', ' ', '\n', ':', '|'
 };
 
 char getCharFromEvent(struct KeyEvent ev) {
@@ -372,6 +372,16 @@ void keyboardIRQHandler(struct InterruptStackFrame* stack) {
 
     if (scancode == 0x1C) {
         ev.code = enter;
+        goto character;
+    }
+
+    if (scancode == 0x2B) {
+        ev.code = backslash;
+        goto character;
+    }
+
+    if (scancode == 0x27) {
+        ev.code = semicolon;
         goto character;
     }
 

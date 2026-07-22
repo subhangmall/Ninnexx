@@ -11,27 +11,30 @@ extern void context_switch_noret(void);
 extern uint32_t tss[];
 extern int cursor;
 
+void switchMemoryContext(uint32_t addr);
+
 
 void zombieContextSwitchTo(struct Process* next) {
     cursor = next->cursor;
 
     if (!next->kernel) {
-        tss[1] = current->krnlStackTop; // esp 0
-        asm volatile(
-            "mov %0, %%eax\n\t"
-            "mov %%eax, %%cr3\n\t"
-            "jmp 1f\n\t"
-            "1:"
-            :
-            : "r" (next->cr3)
-            : "eax"
-        );
+        tss[1] = next->krnlStackTop; // esp 0
+        switchMemoryContext(next->cr3);
+        // asm volatile(
+        //     "mov %0, %%eax\n\t"
+        //     "mov %%eax, %%cr3\n\t"
+        //     "jmp 1f\n\t"
+        //     "1:"
+        //     :
+        //     : "r" (next->cr3)
+        //     : "eax"
+        // );
     }
 
     // sync with global page directory
-    for (uint32_t i = (0xC0000000 >> 22); i < (0xFFFFFFFF >> 22); i++) {
-        KERNEL_PAGE_DIRECTORY[i] = PARENT_KPD[i];
-    }
+    // for (uint32_t i = (0xC0000000 >> 22); i < (0xFFFFFFFF >> 22); i++) {
+    //     KERNEL_PAGE_DIRECTORY[i] = PARENT_KPD[i];
+    // }
     
 
     asm volatile (

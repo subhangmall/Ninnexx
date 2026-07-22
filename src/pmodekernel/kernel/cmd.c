@@ -6,22 +6,35 @@
 #include <kernel/logging.h>
 #include <kernel/time/time.h>
 #include <kernel.h>
+#include <kernel/fskernelapi/loadfile.h>
+#include <kernel/processes/process.h>
+#include <kernel/memory.h>
+#include <kernel/memory/pmm.h>
+
 
 int getCmdAndParse(char* cmd);
 
+extern struct Process* current;
+
 void cmd() {
-    char* cmd = (char*) calloc(100, sizeof(char));
-    printf("Welcome to Ninnexx!\n");
-    while (1) {
-        printf("\nCommand Parser: ");
-        uint32_t a = getCmdAndParse(cmd);
-        if (strncmp(cmd, "clear", 5) == 0) {
-            kclear();
-        } else {
-            printf("\nCommand not found!");
-        }
-        memset(cmd, '\0', 100);
-    }
+    // char* cmd = (char*) calloc(100, sizeof(char));
+    // printf("Welcome to Ninnexx!\n");
+    // while (1) {
+    //     printf("\nCommand Parser: ");
+    //     uint32_t a = getCmdAndParse(cmd);
+    //     if (strncmp(cmd, "clear", 5) == 0) {
+    //         kclear();
+    //     } else {
+    //         printf("\nCommand not found!");
+    //     }
+    //     memset(cmd, '\0', 100);
+    // }
+
+    uint32_t a = loadFile("C:\\BOOT.COM", (struct PageDirectoryEntry*) (current->cr3), 0x10000000);
+    uint32_t* data = (uint32_t*) 0x10000000;
+    // printf("%X", *data);
+    // kprint_hex(a);
+    while (1) {}
 }
 
 int getCmdAndParse(char* cmd) {
