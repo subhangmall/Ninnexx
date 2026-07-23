@@ -92,7 +92,7 @@ void continueInitialization() {
         *(uint16_t*)(0xDFFFF000 + 2*i) = videoMemory[i];
     }
     vmmAllocatePage(PARENT_KPD_ADDR, (uint32_t)&kernelPageDirectory, VMM_WRITABLE);
-    createNewProcess(true, false, createProcStackDirectoryStructure(), (uint32_t)&cmd, 0);
+    createNewProcess(true, false, createProcStackDirectoryStructure(), (uint32_t)&cmd, 0, 0, 0, 0, 0, 0, 0);
     switchForegroundProcess();
     kclear();
 

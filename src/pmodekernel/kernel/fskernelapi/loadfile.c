@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-uint32_t loadFile(char* path, struct PageDirectoryEntry* kPDNew, uint32_t startAddr) {
+uint32_t loadFile(char* path, uint32_t kPDNew, uint32_t startAddr) {
     // DO NOT LOAD AT 0X00000000 b/c will be seen as null
     FL_FILE *file;
     void* buffer;
@@ -22,6 +22,7 @@ uint32_t loadFile(char* path, struct PageDirectoryEntry* kPDNew, uint32_t startA
         :
         :
     );
+    switchMemoryContext(kPDNew);
 
     file = fl_fopen(path, "rb");
     if (!file) {
@@ -48,7 +49,7 @@ uint32_t loadFile(char* path, struct PageDirectoryEntry* kPDNew, uint32_t startA
     if (bytesRead != size) {
         fl_fclose(file);
         // printf("Expected %X bytes, got %X\n", size, bytesRead);
-        switchMemoryContext( oldKPD);
+        switchMemoryContext(oldKPD);
         return 3; // i on know
     }
 

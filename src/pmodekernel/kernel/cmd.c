@@ -17,23 +17,37 @@ int getCmdAndParse(char* cmd);
 extern struct Process* current;
 
 void cmd() {
-    // char* cmd = (char*) calloc(100, sizeof(char));
-    // printf("Welcome to Ninnexx!\n");
-    // while (1) {
-    //     printf("\nCommand Parser: ");
-    //     uint32_t a = getCmdAndParse(cmd);
-    //     if (strncmp(cmd, "clear", 5) == 0) {
-    //         kclear();
-    //     } else {
-    //         printf("\nCommand not found!");
-    //     }
-    //     memset(cmd, '\0', 100);
-    // }
+    char* cmd = (char*) calloc(100, sizeof(char));
+    printf("Welcome to Ninnexx!\n");
+    while (1) {
+        printf("\nCommand Parser: ");
+        uint32_t len = getCmdAndParse(cmd);
+        if (strncmp(cmd, "clear", 5) == 0) {
+            kclear();
+        } else if (strncmp(cmd, "lc", 2) == 0) {
+            if (len < 4) {
+                printf("\nPlease list a file!\n");
+                continue;
+            }
+            uint32_t procStackStruct = createProcStackDirectoryStructure();
+            uint32_t result = loadFile((char*)(((uint32_t)cmd)+3), virtToPhysAddr((uint32_t)procStackStruct), 0x0000100);
+            if (result == 1) {
+                printf("\nFile not found!\n");
+                continue;
+            } else if (result == 2) {
+                printf("\nMemory allocation error!\n");
+                continue;
+            } else if (result == 3) {
+                printf("\nFailed to read file!\n");
+                continue;
+            }
+            uint32_t procID = createNewProcess(false, true, procStackStruct, 0x0100, 0xFFFE, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0);
+        } else {
+            printf("\nCommand not found!\n");
+        }
+        memset(cmd, '\0', 100);
+    }
 
-    uint32_t a = loadFile("C:\\BOOT.COM", (struct PageDirectoryEntry*) (current->cr3), 0x10000000);
-    uint32_t* data = (uint32_t*) 0x10000000;
-    // printf("%X", *data);
-    // kprint_hex(a);
     while (1) {}
 }
 
@@ -53,6 +67,7 @@ int getCmdAndParse(char* cmd) {
             : "eax", "ebx", "memory"
         );
         if (cmd[idx] == '\n') {
+            cmd[idx] = '\0';
             idx++;
             break;
         }

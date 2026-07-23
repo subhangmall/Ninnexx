@@ -94,13 +94,14 @@ uint32_t kernelStackAllocationZone = 0xDFFFF000;
 //     return new->procID;
 // }
 
-uint32_t createNewProcess(bool kernel, bool v8086, uint32_t procStackDirStruct, uint32_t startEip, uint32_t usrEspIfNeeded) {
-    struct InterruptStackFrame* isf = (struct InterruptStackFrame*) malloc(sizeof(struct InterruptStackFrameFromUser));
+uint32_t createNewProcess(bool kernel, bool v8086, uint32_t procStackDirStruct, uint32_t startEip, uint32_t usrEspIfNeeded, uint16_t usrDSIfNeeded, uint16_t usrFSIfNeeded, uint16_t usrGSIfNeeded, uint16_t usrCSIfNeeded, uint16_t usrESIfNeeded, uint16_t usrSSIfNeeded) {
+    if (kernel && v8086) return -1;
+    struct InterruptStackFrame* isf = (struct InterruptStackFrame*) malloc(sizeof(struct InterruptStackFrameV8086));
     struct Process* new = (struct Process*) malloc(sizeof(struct Process));
 
     new->procID = ++currentProcID;
     new->kernel = kernel;
-    new->v8086 = v8086;
+    new->v8086 = v8086; 
     new->next = &procHead;
     new->status = 0;
     new->cr3 = virtToPhysAddr(procStackDirStruct);
@@ -112,7 +113,12 @@ uint32_t createNewProcess(bool kernel, bool v8086, uint32_t procStackDirStruct, 
     if (kernel) {
         new->kesp = kernelStackTop-sizeof(struct InterruptStackFrame);
     } else {
-        new->kesp = kernelStackTop-sizeof(struct InterruptStackFrameFromUser);
+        if (!v8086) {
+            new->kesp = kernelStackTop-sizeof(struct InterruptStackFrameFromUser);
+        } else {
+            new->kesp = kernelStackTop-sizeof(struct InterruptStackFrameV8086);
+        }
+        
     }
     
     new->krnlStackTop = kernelStackTop;
@@ -121,13 +127,17 @@ uint32_t createNewProcess(bool kernel, bool v8086, uint32_t procStackDirStruct, 
     isf->eflags |= 1 << 1; // bit 1 always 1
     isf->eflags |= 1 << 9; // interrupts enabled
     if (v8086) {
-        isf->eflags |= 1 << 17;
+        isf->eflags |= 1 << 17; // vm
+        isf->eflags |= (3 << 12); // iopl
     }
     isf->eip = startEip;
     isf->edi = 0x00000000;
     isf->esi = 0x00000000;
     isf->ebp = 0x00000000; 
-    isf->esp = 0x00000000; 
+    if (!kernel) {
+        isf->esp = usrEspIfNeeded;
+    }
+    
     isf->ebx = 0x00000000;
     isf->edx = 0x00000000;
     isf->ecx = 0x00000000;
@@ -135,28 +145,50 @@ uint32_t createNewProcess(bool kernel, bool v8086, uint32_t procStackDirStruct, 
     isf->intNum = 0x00; // dont matter cause they wont ever be accessible to the program
     isf->errNum = 0x00; // dont matter cause they wont ever be accessible to the program
 
+   
+    
     if (kernel) {
-        isf->cs = 0x08;
-        isf->gs = 0x10;
-        isf->fs = 0x10;
-        isf->es = 0x10;
-        isf->ds = 0x10;
+         isf->cs = 0x08;
+         isf->gs = 0x10;
+            isf->fs = 0x10;
+            isf->es = 0x10;
+            isf->ds = 0x10;
     } else {
-        isf->cs = 0x1B; // |= 0x03 b/c ring 3
-        isf->gs = 0x23;
-        isf->fs = 0x23;
-        isf->es = 0x23;
-        isf->ds = 0x23;
+        if (!v8086) {
+            isf->cs = 0x1B; // |= 0x03 b/c ring 3
+            isf->gs = 0x23;
+            isf->fs = 0x23;
+            isf->es = 0x23;
+            isf->ds = 0x23;
+        } else {
+            isf->cs = usrCSIfNeeded;
+            isf->gs = usrGSIfNeeded;
+            isf->fs = usrFSIfNeeded;
+            isf->es = usrESIfNeeded;
+            isf->ds = usrDSIfNeeded;
+        }
     }
 
 
     if (kernel) {
         memcpy((void*)(kernelStackTop - sizeof(struct InterruptStackFrame)), isf, sizeof(struct InterruptStackFrame));
     } else {
-        struct InterruptStackFrameFromUser* isfu = (struct InterruptStackFrameFromUser*) isf;
-        isfu->usrEsp = usrEspIfNeeded;
-        isfu->usrSS = 0x23;
-        memcpy((void*)(kernelStackTop - sizeof(struct InterruptStackFrameFromUser)), isfu, sizeof(struct InterruptStackFrameFromUser));
+        if (!v8086) {
+            struct InterruptStackFrameFromUser* isfu = (struct InterruptStackFrameFromUser*) isf;
+            isfu->usrEsp = usrEspIfNeeded;
+            isfu->usrSS = 0x23;
+            memcpy((void*)(kernelStackTop - sizeof(struct InterruptStackFrameFromUser)), isfu, sizeof(struct InterruptStackFrameFromUser));
+        } else {
+            struct InterruptStackFrameV8086* isfv = (struct InterruptStackFrameV8086*) isf;
+            isfv->usrEsp = usrEspIfNeeded;
+            isfv->usrSS = usrSSIfNeeded;
+            isfv->esHardware = usrESIfNeeded;
+            isfv->dsHardware = usrDSIfNeeded;
+            isfv->fsHardware = usrFSIfNeeded;
+            isfv->gsHardware = usrGSIfNeeded;
+            memcpy((void*)(kernelStackTop - sizeof(struct InterruptStackFrameV8086)), isfv, sizeof(struct InterruptStackFrameV8086));
+        }
+        
     }
     free(isf);
 
@@ -197,7 +229,7 @@ uint32_t createProcStackDirectoryStructure() {
     pde[0xFFFFFFFF >> 22].pageAddress = (virtToPhysAddr(kernelStackAllocationZone) >> 12);
 
     if (eflags & (1 << 9)) asm volatile ("sti");
-    printf("%X", kernelStackAllocationZone);
+    // printf("%X", kernelStackAllocationZone);
     return kernelStackAllocationZone;
 }
 

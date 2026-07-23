@@ -3,6 +3,6 @@
 
 #include <kernel/memory/pmm.h>
 
-uint32_t loadFile(char* path, struct PageDirectoryEntry* kPDNew, uint32_t startAddr);
+uint32_t loadFile(char* path, uint32_t kPDNew, uint32_t startAddr);
 
 #endif
