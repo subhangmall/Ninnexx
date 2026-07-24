@@ -6,6 +6,7 @@
 #include <kernel/memory/pageFault.h>
 #include <kernel/processes/yield.h>
 #include <kernel/time/time.h>
+#include <kernel/dosvirt/int21h.h>
 #include <stdio.h>
 
 void divByZeroException(struct InterruptStackFrame* stack) {
@@ -23,5 +24,6 @@ void initInterruptHandlers() {
     setIDTHandler(14, (uint32_t) &pageFault, false);
     setIDTHandler(0xFF, (uint32_t) &yield, true);
     setIDTHandler(0x80, (uint32_t) &sysIntr, true);
+    setIDTHandler(0x21, (uint32_t)&intr21, true);
     initTimeIntrHandler();
 }

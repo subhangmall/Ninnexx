@@ -10,6 +10,7 @@
 #include <kernel/processes/process.h>
 #include <kernel/memory.h>
 #include <kernel/memory/pmm.h>
+#include <kernel/dosvirt/loadcom.h>
 
 
 int getCmdAndParse(char* cmd);
@@ -17,7 +18,7 @@ int getCmdAndParse(char* cmd);
 extern struct Process* current;
 
 void cmd() {
-    char* cmd = (char*) calloc(100, sizeof(char));
+    char* cmd = (char*) calloc(128, sizeof(char));
     printf("Welcome to Ninnexx!\n");
     while (1) {
         printf("\nCommand Parser: ");
@@ -29,8 +30,16 @@ void cmd() {
                 printf("\nPlease list a file!\n");
                 continue;
             }
-            uint32_t procStackStruct = createProcStackDirectoryStructure();
-            uint32_t result = loadFile((char*)(((uint32_t)cmd)+3), virtToPhysAddr((uint32_t)procStackStruct), 0x0000100);
+            printf("\nList the arguments (no preceding space needed): ");
+            char* arg = calloc(128, 1);
+            
+            uint32_t len = getCmdAndParse((char*)((uint32_t) arg + 1));
+            if (len != 0) {
+                len++;
+                arg[0] = ' ';
+            }
+
+            uint32_t result = loadCom((char*)(((uint32_t)cmd)+3), (uint8_t) len, arg);
             if (result == 1) {
                 printf("\nFile not found!\n");
                 continue;
@@ -40,8 +49,11 @@ void cmd() {
             } else if (result == 3) {
                 printf("\nFailed to read file!\n");
                 continue;
+            } else if (result == 4) {
+                printf("\nFailed to start process!\n");
+                continue;
             }
-            uint32_t procID = createNewProcess(false, true, procStackStruct, 0x0100, 0xFFFE, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0);
+            free(arg);
         } else {
             printf("\nCommand not found!\n");
         }
@@ -53,7 +65,7 @@ void cmd() {
 
 int getCmdAndParse(char* cmd) {
     uint32_t idx = 0;
-    while (idx < 100) {
+    while (idx < 127) {
         asm volatile (
             "startOfLoop: \n\t"
             "xor %%eax, %%eax\n\t"
@@ -66,9 +78,9 @@ int getCmdAndParse(char* cmd) {
             : 
             : "eax", "ebx", "memory"
         );
-        if (cmd[idx] == '\n') {
+        if (cmd[idx] == '\r') {
             cmd[idx] = '\0';
-            idx++;
+            // idx++;
             break;
         }
         kputc(cmd[idx]);

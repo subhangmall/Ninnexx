@@ -48,7 +48,7 @@ void continueInitialization() {
 
     // setup interrupts/pic
     setupInterruptStructures();
-    initPIC(0x20, 0x28);
+    initPIC(0x30, 0x38);
     initInterruptHandlers();
     loadIDTR();
     enableInterrupts();

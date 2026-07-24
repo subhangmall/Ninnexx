@@ -11,6 +11,7 @@ FS := $(KERNEL)/filesystem
 FSKAPI := $(KERNEL)/fskernelapi
 STDC := $(KERNEL)/standardLibraries
 PROC := $(KERNEL)/processes
+VIRT := $(KERNEL)/dosvirt
 BOOT := src/boot
 TMP := tmp
 OUT := target
@@ -20,7 +21,7 @@ all: $(OUT)/freedos.img
 run: $(OUT)/freedos.img
 	qemu-system-i386 -m 4000 -rtc base=localtime -hda $(OUT)/freedos.img -boot d
 
-$(OUT)/freedos.img: $(TMP)/kernel.bin $(TMP)/boot.com | $(OUT)
+$(OUT)/freedos.img: $(TMP)/kernel.bin $(TMP)/boot.com $(TMP)/testcom.com | $(OUT)
 	@if [ "$$EUID" -ne 0 ]; then \
         echo "To flash freedos.img, make must be run as root"; \
         exit 1; \
@@ -30,18 +31,23 @@ $(OUT)/freedos.img: $(TMP)/kernel.bin $(TMP)/boot.com | $(OUT)
 	mount -t msdos -o loop,offset=32256 $(OUT)/freedos.img /mnt/freedos
 	rm -f /mnt/freedos/custom/boot.com
 	rm -f /mnt/freedos/custom/kernel.bin
+	rm -f /mnt/freedos/custom/testcom.com
 	cp $(TMP)/boot.com /mnt/freedos/custom
 	cp $(TMP)/kernel.bin /mnt/freedos/custom
+	cp $(TMP)/testcom.com /mnt/freedos/custom
 	umount /mnt/freedos
 
 $(TMP)/boot.com: $(BOOT)/main.asm | $(TMP)
 	nasm -f bin $< -o $@
 
-$(TMP)/kernel.bin: $(TMP)/kernel.elf
+$(TMP)/testcom.com: $(VIRT)/testcom.asm | $(TMP)
+	nasm -f bin $< -o $@
+
+$(TMP)/kernel.bin: $(TMP)/kernel.elf | $(TMP)
 	objcopy -O binary $(TMP)/kernel.elf $(TMP)/kernel.bin
 
-$(TMP)/kernel.elf: $(TMP)/kernel.o $ $(TMP)/memSetup.o $(TMP)/kalloc.o $(TMP)/logging.o $(TMP)/idt.o $(TMP)/intDispatchers.o $(TMP)/iolibrary.o $(TMP)/initInterruptHandlers.o $(TMP)/pic.o $(TMP)/e820.o $(TMP)/pmm.o $(TMP)/contHighHalfSetup.o $(TMP)/vmm.o $(TMP)/gdt.o $(TMP)/time.o $(TMP)/pitIntr.o $(TMP)/ps2keyboard.o $(TMP)/atapio.o $(TMP)/fat_access.o $(TMP)/fat_cache.o $(TMP)/fat_filelib.o $(TMP)/fat_format.o $(TMP)/fat_misc.o $(TMP)/fat_string.o $(TMP)/fat_table.o $(TMP)/fat_write.o $(TMP)/stdio.o $(TMP)/string.o $(TMP)/stdlib.o $(TMP)/atlock.o $(TMP)/contextSwitch.o $(TMP)/contextSwitchAsm.o $(TMP)/process.o $(TMP)/yield.o  $(TMP)/pageFault.o $(TMP)/syscall.o $(TMP)/cmd.o $(TMP)/loadfile.o $(KERNEL)/linker.ld 
-	ld -m elf_i386 -T $(KERNEL)/linker.ld -o $(TMP)/kernel.elf $(TMP)/kernel.o $(TMP)/memSetup.o $(TMP)/kalloc.o $(TMP)/logging.o $(TMP)/idt.o $(TMP)/intDispatchers.o $(TMP)/iolibrary.o $(TMP)/initInterruptHandlers.o $(TMP)/e820.o $(TMP)/pmm.o $(TMP)/pic.o $(TMP)/contHighHalfSetup.o $(TMP)/vmm.o $(TMP)/gdt.o $(TMP)/time.o $(TMP)/pitIntr.o $(TMP)/ps2keyboard.o $(TMP)/atapio.o $(TMP)/fat_access.o $(TMP)/fat_cache.o $(TMP)/fat_filelib.o $(TMP)/fat_format.o $(TMP)/fat_misc.o $(TMP)/fat_string.o $(TMP)/fat_table.o $(TMP)/fat_write.o $(TMP)/stdio.o $(TMP)/string.o $(TMP)/stdlib.o $(TMP)/atlock.o $(TMP)/contextSwitch.o $(TMP)/contextSwitchAsm.o $(TMP)/process.o $(TMP)/yield.o $(TMP)/pageFault.o $(TMP)/syscall.o $(TMP)/cmd.o $(TMP)/loadfile.o
+$(TMP)/kernel.elf: $(TMP)/kernel.o $ $(TMP)/memSetup.o $(TMP)/kalloc.o $(TMP)/logging.o $(TMP)/idt.o $(TMP)/intDispatchers.o $(TMP)/iolibrary.o $(TMP)/initInterruptHandlers.o $(TMP)/pic.o $(TMP)/e820.o $(TMP)/pmm.o $(TMP)/contHighHalfSetup.o $(TMP)/vmm.o $(TMP)/gdt.o $(TMP)/time.o $(TMP)/pitIntr.o $(TMP)/ps2keyboard.o $(TMP)/atapio.o $(TMP)/fat_access.o $(TMP)/fat_cache.o $(TMP)/fat_filelib.o $(TMP)/fat_format.o $(TMP)/fat_misc.o $(TMP)/fat_string.o $(TMP)/fat_table.o $(TMP)/fat_write.o $(TMP)/stdio.o $(TMP)/string.o $(TMP)/stdlib.o $(TMP)/atlock.o $(TMP)/contextSwitch.o $(TMP)/contextSwitchAsm.o $(TMP)/process.o $(TMP)/yield.o  $(TMP)/pageFault.o $(TMP)/syscall.o $(TMP)/cmd.o $(TMP)/loadfile.o $(TMP)/int21h.o $(TMP)/loadcom.o $(KERNEL)/linker.ld 
+	ld -m elf_i386 -T $(KERNEL)/linker.ld -o $(TMP)/kernel.elf $(TMP)/kernel.o $(TMP)/memSetup.o $(TMP)/kalloc.o $(TMP)/logging.o $(TMP)/idt.o $(TMP)/intDispatchers.o $(TMP)/iolibrary.o $(TMP)/initInterruptHandlers.o $(TMP)/e820.o $(TMP)/pmm.o $(TMP)/pic.o $(TMP)/contHighHalfSetup.o $(TMP)/vmm.o $(TMP)/gdt.o $(TMP)/time.o $(TMP)/pitIntr.o $(TMP)/ps2keyboard.o $(TMP)/atapio.o $(TMP)/fat_access.o $(TMP)/fat_cache.o $(TMP)/fat_filelib.o $(TMP)/fat_format.o $(TMP)/fat_misc.o $(TMP)/fat_string.o $(TMP)/fat_table.o $(TMP)/fat_write.o $(TMP)/stdio.o $(TMP)/string.o $(TMP)/stdlib.o $(TMP)/atlock.o $(TMP)/contextSwitch.o $(TMP)/contextSwitchAsm.o $(TMP)/process.o $(TMP)/yield.o $(TMP)/pageFault.o $(TMP)/syscall.o $(TMP)/cmd.o $(TMP)/loadfile.o $(TMP)/int21h.o $(TMP)/loadcom.o
 
 $(TMP)/pitIntr.o: $(TIME)/pitIntr.c | $(TMP)
 	gcc -m32 -ffreestanding -fno-stack-protector -Isrc/pmodekernel/include -c $< -o $@
@@ -156,6 +162,12 @@ $(TMP)/cmd.o: $(KERNEL)/cmd.c | $(TMP)
 	gcc -m32 -ffreestanding -fno-stack-protector -Isrc/pmodekernel/include -c $< -o $@
 
 $(TMP)/loadfile.o: $(FSKAPI)/loadfile.c | $(TMP)
+	gcc -m32 -ffreestanding -fno-stack-protector -Isrc/pmodekernel/include -c $< -o $@
+
+$(TMP)/int21h.o: $(VIRT)/int21h.c | $(TMP)
+	gcc -m32 -ffreestanding -fno-stack-protector -Isrc/pmodekernel/include -c $< -o $@
+
+$(TMP)/loadcom.o: $(VIRT)/loadcom.c | $(TMP)
 	gcc -m32 -ffreestanding -fno-stack-protector -Isrc/pmodekernel/include -c $< -o $@
 
 $(TMP):

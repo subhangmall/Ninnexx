@@ -44,17 +44,18 @@ extern uint32_t procIDShowing;
 typedef enum Keys {
     A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z, 
     one, two, three, four, five, six, seven, eight, nine, zero,
-    space, enter, semicolon, backslash, period
+    space, enter, 
+    semicolon, backslash, period, comma, singlequote, leftbracket, rightbracket, minus, equals, slash, tick
 };
 
 static char VisibleKeysAscii[] = {
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ' ', '\n', ';', '\\', '.'
+    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ' ', '\r', ';', '\\', '.', ',', '\'', '[', ']', '-', '=', '/', '`'
 };
 
 static char VisibleKeysAsciiShift[] = {
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-    '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', ' ', '\n', ':', '|', '>'
+    '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', ' ', '\r', ':', '|', '>', '<', '"', '{', '}', '_', '+', '?', '~'
 };
 
 char getCharFromEvent(struct KeyEvent ev) {
@@ -387,6 +388,46 @@ void keyboardIRQHandler(struct InterruptStackFrame* stack) {
 
     if (scancode == 0x34) {
         ev.code = period;
+        goto character;
+    }
+
+    if (scancode == 0x33) {
+        ev.code = comma;
+        goto character;
+    }
+
+    if (scancode == 0x35) {
+        ev.code = slash;
+        goto character;
+    }
+
+    if (scancode == 0x28) {
+        ev.code = singlequote;
+        goto character;
+    }
+
+    if (scancode == 0x1A) {
+        ev.code = leftbracket;
+        goto character;
+    }
+
+    if (scancode == 0x1B) {
+        ev.code = rightbracket;
+        goto character;
+    }
+
+    if (scancode == 0x0C) {
+        ev.code = minus;
+        goto character;
+    }
+
+    if (scancode == 0x0D) {
+        ev.code = equals;
+        goto character;
+    }
+
+    if (scancode == 0x29) {
+        ev.code = tick;
         goto character;
     }
 
